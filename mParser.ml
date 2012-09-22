@@ -342,7 +342,7 @@ let message msg s =
 let zero s =
   Empty_failed (unknown_error s)
 
-let (>>=) p f s =
+let bind p f s =
   match p s with
     | Empty_failed e1 -> Empty_failed e1
     | Consumed_failed e1 -> Consumed_failed e1
@@ -356,6 +356,8 @@ let (>>=) p f s =
             | Empty_failed e2 -> Consumed_failed (merge_errors e2 e1)
             | Empty_ok (r2, s2, e2) -> Consumed_ok (r2, s2, merge_errors e2 e1)
             | consumed -> consumed )
+
+let (>>=) = bind
 
 let (>>) p q =
   p >>= fun _ -> q

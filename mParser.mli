@@ -330,11 +330,14 @@ val message: string -> ('a, 's) parser
 val zero: ('a, 's) parser
 (** [zero] always fails with an [Unknown_error] without consuming input. *)
 
-val (>>=): ('a, 's) parser -> ('a -> ('b, 's) parser) -> ('b, 's) parser
+val bind: ('a, 's) parser -> ('a -> ('b, 's) parser) -> ('b, 's) parser
 (** [p >>= f] first applies the parser [p], then applies [f] to the resulting
     value, and finally applies the resulting parser.  Since the second
     parser can depend on the result of the first parser, it is possible to
     parse context-sensitive grammars. *)
+
+val (>>=): ('a, 's) parser -> ('a -> ('b, 's) parser) -> ('b, 's) parser
+(** [p >>= f] is equivalent to [bind p f] *)
 
 val (>>): ('a, 's) parser -> ('b, 's) parser -> ('b, 's) parser
 (** [p >> q] is equivalent to [p >>= (fun _ -> q)]. *)
