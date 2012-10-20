@@ -1,6 +1,6 @@
 OBUILD = ocamlbuild -use-ocamlfind
 ALL = mParser.cma charStream.cma
-INSTALL_FILES = mParser.cma mParser.cmxa mParser.cmi mParser.mli charStream.cma charStream.cmxa charStream.cmi charStream.mli
+INSTALL_FILES = mParser.cma mParser.cmxa mParser.cmi mParser.mli mParser.a charStream.cma charStream.cmxa charStream.cmi charStream.mli charStream.a
 
 all: all.opt all.byte
 
