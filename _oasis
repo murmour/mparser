@@ -12,9 +12,9 @@ BuildTools:   ocamlbuild
 Homepage:     https://bitbucket.org/mrm/mparser
 
 Description:
-    This library implements a rather complete and efficient monadic
-    parser combinator library similar to the Parsec library for Haskell by Daan
-    Leijen and the FParsec library for F# by Stephan Tolksdorf.
+  This library implements a rather complete and efficient monadic
+  parser combinator library similar to the Parsec library for Haskell by Daan
+  Leijen and the FParsec library for FSharp by Stephan Tolksdorf.
 
 Library mParser
   Path:               src
