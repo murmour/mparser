@@ -1,0 +1,12 @@
+# OASIS_START
+# DO NOT EDIT (digest: 92c6c8b692bb84ba8021c57105420a48)
+version = "1.0"
+description = "A simple monadic parser combinator library"
+requires = "pcre"
+archive(byte) = "mParser.cma"
+archive(byte, plugin) = "mParser.cma"
+archive(native) = "mParser.cmxa"
+archive(native, plugin) = "mParser.cmxs"
+exists_if = "mParser.cma"
+# OASIS_STOP
+

@@ -1,0 +1,8 @@
+(* OASIS_START *)
+(* DO NOT EDIT (digest: ff8bfc7f991fe0aec8beda779a0b9436) *)
+Authors of mParser
+Holger Arnold
+
+Current maintainers of mParser
+Max Mouratov
+(* OASIS_STOP *)
