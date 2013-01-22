@@ -19,5 +19,5 @@ Description:
 Library mParser
   Path:               src
   Modules:            MParser, CharStream
-  FindlibName:        mParser
+  FindlibName:        mparser
   BuildDepends:       pcre
