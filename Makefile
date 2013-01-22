@@ -1,26 +1,38 @@
-OBUILD = ocamlbuild -use-ocamlfind
-ALL = mParser.cma charStream.cma
-INSTALL_FILES = mParser.cma mParser.cmxa mParser.cmi mParser.mli mParser.a charStream.cma charStream.cmxa charStream.cmi charStream.mli charStream.a
+# OASIS_START
+# DO NOT EDIT (digest: bc1e05bfc8b39b664f29dae8dbd3ebbb)
 
-all: all.opt all.byte
+SETUP = ocaml setup.ml
 
-all.byte::
-	$(OBUILD) $(ALL)
+build: setup.data
+	$(SETUP) -build $(BUILDFLAGS)
 
-all.opt::
-	$(OBUILD) $(ALL) $(ALL:.cma=.cmxa)
+doc: setup.data build
+	$(SETUP) -doc $(DOCFLAGS)
 
-docs:
-	$(OBUILD) mParser.docdir/index.html
+test: setup.data build
+	$(SETUP) -test $(TESTFLAGS)
 
-clean:
-	ocamlbuild -clean
+all: 
+	$(SETUP) -all $(ALLFLAGS)
 
-install: all
-	cd _build && $(MAKE) -f ../Makefile realinstall
+install: setup.data
+	$(SETUP) -install $(INSTALLFLAGS)
 
-realinstall:
-	ocamlfind install mParser ../META $(INSTALL_FILES)
+uninstall: setup.data
+	$(SETUP) -uninstall $(UNINSTALLFLAGS)
 
-uninstall:
-	ocamlfind remove mParser
+reinstall: setup.data
+	$(SETUP) -reinstall $(REINSTALLFLAGS)
+
+clean: 
+	$(SETUP) -clean $(CLEANFLAGS)
+
+distclean: 
+	$(SETUP) -distclean $(DISTCLEANFLAGS)
+
+setup.data:
+	$(SETUP) -configure $(CONFIGUREFLAGS)
+
+.PHONY: build doc test all install uninstall reinstall clean distclean configure
+
+# OASIS_STOP
