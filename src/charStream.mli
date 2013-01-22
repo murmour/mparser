@@ -1,17 +1,27 @@
-(* base/lib/charStream.mli
 
-   Copyright (C) 2008 Holger Arnold
+(* MParser, a simple monadic parser combinator library
+   -----------------------------------------------------------------------------
+   Copyright (C) 2008, Holger Arnold
 
    Additional authors:
-     Max Mouratov (cleaned the code up and separated it from ocaml-base)
+     Max Mouratov (cleaned the code up and forked it from ocaml-base)
 
-   This file may be redistributed and modified under the terms of the
-   GNU LGPL version 2.1.  See the LICENSE file for details.
-*)
+   License:
+     This library is free software; you can redistribute it and/or
+     modify it under the terms of the GNU Library General Public
+     License version 2.1, as published by the Free Software Foundation.
 
-(** Character streams.
+     This library is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-    The [CharStream] module provides a position-based interface to character
+     See the GNU Library General Public License version 2.1 for more details
+     (enclosed in the file LICENSE.txt)
+
+   Module CharStream:
+     Character streams *)
+
+(** The [CharStream] module provides a position-based interface to character
     streams.  The streams are optimized for applications that mostly read a
     stream sequentially and occasionally backtrack over a bounded distance,
     which is a common usage pattern of backtracking parsers.
@@ -21,6 +31,7 @@
     stream [s] if it satisfies [0 <= pos < length s].  Character streams can
     be created from input channels and from strings.
 *)
+
 
 type regexp = Pcre.regexp
 (** The type of regular expressions. *)
