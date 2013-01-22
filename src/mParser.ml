@@ -1,13 +1,25 @@
-(* base/lib/mParser.ml
 
-   Copyright (C) 2008 Holger Arnold
+(* MParser, a simple monadic parser combinator library
+   -----------------------------------------------------------------------------
+   Copyright (C) 2008, Holger Arnold
 
    Additional authors:
-     Max Mouratov (cleaned the code up and separated it from ocaml-base)
+     Max Mouratov (cleaned the code up and forked it from ocaml-base)
 
-   This file may be redistributed and modified under the terms of the
-   GNU LGPL version 2.1.  See the LICENSE file for details.
-*)
+   License:
+     This library is free software; you can redistribute it and/or
+     modify it under the terms of the GNU Library General Public
+     License version 2.1, as published by the Free Software Foundation.
+
+     This library is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+     See the GNU Library General Public License version 2.1 for more details
+     (enclosed in the file LICENSE.txt)
+
+   Module MParser:
+     The parser combinator library *)
 
 (** For an introduction to monadic parser combinators see the following paper:
 

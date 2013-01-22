@@ -1,17 +1,27 @@
-(* base/lib/mParser.mli
 
-   Copyright (C) 2008 Holger Arnold
+(* MParser, a simple monadic parser combinator library
+   -----------------------------------------------------------------------------
+   Copyright (C) 2008, Holger Arnold
 
    Additional authors:
-     Max Mouratov (cleaned the code up and separated it from ocaml-base)
+     Max Mouratov (cleaned the code up and forked it from ocaml-base)
 
-   This file may be redistributed and modified under the terms of the
-   GNU LGPL version 2.1.  See the LICENSE file for details.
-*)
+   License:
+     This library is free software; you can redistribute it and/or
+     modify it under the terms of the GNU Library General Public
+     License version 2.1, as published by the Free Software Foundation.
 
-(** Parser combinators.
+     This library is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-    The [MParser] module is a monadic parser combinator library.  The parser
+     See the GNU Library General Public License version 2.1 for more details
+     (enclosed in the file LICENSE.txt)
+
+   Module MParser:
+     The parser combinator library *)
+
+(** The [MParser] module is a monadic parser combinator library. The parser
     combinators provided by this module can be used to build parsers for
     context-sensitive, infinite look-ahead grammars that are reasonably
     efficient and produce good error messages due to a controlled use of
@@ -37,6 +47,7 @@
     OCaml types [char] and [string] and therefore there is {e currently no
     support for Unicode}.
 *)
+
 
 type regexp = Pcre.regexp
 (** The type of regular expressions. *)

@@ -1,6 +1,0 @@
-name            = "mParser"
-version         = "1.0"
-description     = "A simple monadic parser combinator library"
-requires        = "pcre"
-archive(byte)   = "mParser.cma"
-archive(native) = "mParser.cmxa"
