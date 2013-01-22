@@ -1,0 +1,23 @@
+OASISFormat:  0.3
+OCamlVersion: >= 3.11
+Name:         mParser
+Version:      1.0
+Synopsis:     A simple monadic parser combinator library
+Authors:      Holger Arnold
+Maintainers:  Max Mouratov
+License:      LGPL-2.1 with OCaml linking exception
+LicenseFile:  LICENSE.txt
+Plugins:      StdFiles (0.2), DevFiles (0.2), META (0.2)
+BuildTools:   ocamlbuild
+Homepage:     https://bitbucket.org/mrm/mparser
+
+Description:
+    This library implements a rather complete and efficient monadic
+    parser combinator library similar to the Parsec library for Haskell by Daan
+    Leijen and the FParsec library for F# by Stephan Tolksdorf.
+
+Library mParser
+  Path:               src
+  Modules:            MParser, CharStream
+  FindlibName:        mParser
+  BuildDepends:       pcre
