@@ -4,7 +4,7 @@
    Copyright (C) 2008, Holger Arnold
 
    Additional authors:
-     Max Mouratov (cleaned the code up and forked it from ocaml-base)
+     Max Mouratov (ripped the code out of ocaml-base)
 
    License:
      This library is free software; you can redistribute it and/or
