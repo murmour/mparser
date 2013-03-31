@@ -223,14 +223,14 @@ let rec error_message input pos messages width indent =
        ^ (string_of_int column) ^ ":\n");
     Buffer.add_string buf
       (error_line input pos width indent);
-    if unexp != [] then
+    if unexp <> [] then
       Buffer.add_string buf
         (ind ^ "Unexpected " ^ (concat_conj "and" unexp) ^ "\n");
-    if exp != [] then
+    if exp <> [] then
       Buffer.add_string buf
         (ind ^ "Expecting " ^ (concat_conj "or" exp) ^ "\n");
-    if msg != [] then
-      if unexp != [] || exp != [] then begin
+    if msg <> [] then
+      if unexp <> [] || exp <> [] then begin
         Buffer.add_string buf (ind ^ "Other errors:\n");
         List.iter (fun m -> Buffer.add_string buf (ind ^ "  " ^ m ^ "\n")) msg;
       end else
