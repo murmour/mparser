@@ -37,6 +37,20 @@
 *)
 
 
+open Printf
+
+
+(* Utils
+   -------------------------------------------------------------------------- *)
+
+module StringSet = Set.Make(String)
+
+(* Returns the sorted list of unique elements in the list of strings [l] *)
+let unique_str (l: string list) : string list =
+  StringSet.elements
+    (List.fold_right StringSet.add l StringSet.empty)
+
+
 (* Parser
    -------------------------------------------------------------------------- *)
 
@@ -225,10 +239,10 @@ let rec error_message input pos messages width indent =
       (error_line input pos width indent);
     if unexp <> [] then
       Buffer.add_string buf
-        (ind ^ "Unexpected " ^ (concat_conj "and" unexp) ^ "\n");
+        (ind ^ "Unexpected " ^ (concat_conj "and" (unique_str unexp)) ^ "\n");
     if exp <> [] then
       Buffer.add_string buf
-        (ind ^ "Expecting " ^ (concat_conj "or" exp) ^ "\n");
+        (ind ^ "Expecting " ^ (concat_conj "or" (unique_str exp)) ^ "\n");
     if msg <> [] then
       if unexp <> [] || exp <> [] then begin
         Buffer.add_string buf (ind ^ "Other errors:\n");
