@@ -1,0 +1,15 @@
+2013-05-02  Max Mouratov  <mmouratov(_)gmail.com>
+
+	Version 1.0.1
+
+	* Fix: 'expecting' and 'unexpected' error messages must not
+	contain duplicate items
+	* New: A tutorial section in the README file
+
+
+2013-01-22  Max Mouratov  <mmouratov(_)gmail.com>
+
+	Version 1.0 (initial version after ripping the code out of ocaml-base)
+
+	* Fix: A bug in MParser.option
+        * New: MParser.bind (for the sake of compatibility with pa_monad)
