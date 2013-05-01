@@ -25,13 +25,17 @@ Usage example
 
 Let's implement a simple expression evaluator.
 
-To save the typing effort, it is often handy to open the ``MParser`` module::
+To save the typing effort, it is often handy to open the ``MParser`` module:
+
+.. sourcecode:: ocaml
 
   open MParser
 
 
 First, we define a parsing combinator ``expr``, which handles expression
-parsing, taking care of the operator predecency issues::
+parsing, taking care of the operator predecency issues:
+
+.. sourcecode:: ocaml
 
   let infix p o =
     Infix (p |>> (fun _ a b -> (`Binop (o, a, b))), Assoc_left)
@@ -46,7 +50,9 @@ parsing, taking care of the operator predecency issues::
     expression operators (Tokens.decimal |>> fun i -> `Int i)
 
 
-Next, we implement an interpreter for our expression tree::
+Next, we implement an interpreter for our expression tree:
+
+.. sourcecode:: ocaml
 
   let rec calc = function
     | `Int i -> i
@@ -58,7 +64,9 @@ Next, we implement an interpreter for our expression tree::
           | `Div -> calc a / calc b
 
 
-The evaluator function::
+The evaluator function:
+
+.. sourcecode:: ocaml
 
   let eval (s: string) : int =
     match MParser.parse_string expr s () with
@@ -66,7 +74,9 @@ The evaluator function::
       | Failed (msg, e) -> failwith msg
 
 
-Using it::
+Using it:
+
+.. sourcecode:: ocaml
 
   eval "4*4+10/2"  ->  21
 
@@ -77,11 +87,6 @@ Have fun!
 References
 ----------
 
-.. [1] ocaml-base homepage
-       http://www.holgerarnold.net/software
-
-.. [2] Syntax extension for Monads in OCaml
-       http://www.cas.mcmaster.ca/~carette/pa_monad/
-
-.. [3] Markus Mottl's OCaml software (PCRE-OCaml)
-       http://www.ocaml.info/home/ocaml_sources.html
+.. [1] http://www.holgerarnold.net/software
+.. [2] http://www.cas.mcmaster.ca/~carette/pa_monad/
+.. [3] http://www.ocaml.info/home/ocaml_sources.html
