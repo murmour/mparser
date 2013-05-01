@@ -15,7 +15,7 @@ Home page: https://bitbucket.org/cakeplus/mparser
 mParser used to be a part of ocaml-base, a collection of useful OCaml
 libraries by Holger Arnold [1]_.
 
-It is possible to use it with pa_monad [2]_.
+The monadic interface of mParser is compatible with pa_monad [2]_.
 
 The only dependency is the PCRE-OCaml library [3]_.
 
@@ -88,5 +88,5 @@ References
 ----------
 
 .. [1] http://www.holgerarnold.net/software
-.. [2] http://www.cas.mcmaster.ca/~carette/pa_monad/
+.. [2] http://www.cas.mcmaster.ca/~carette/pa_monad
 .. [3] http://www.ocaml.info/home/ocaml_sources.html
