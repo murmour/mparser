@@ -33,7 +33,7 @@ To save the typing effort, it is often handy to open the ``MParser`` module:
 
 
 First, we define a parsing combinator ``expr``, which handles expression
-parsing, taking care of the operator predecency issues:
+parsing, taking care of the operator precedence issues:
 
 .. sourcecode:: ocaml
 
