@@ -2,9 +2,7 @@
 (* MParser, a simple monadic parser combinator library
    -----------------------------------------------------------------------------
    Copyright (C) 2008, Holger Arnold
-
-   Additional authors:
-     Max Mouratov (ripped the code out of ocaml-base)
+                 2014, Max Mouratov
 
    License:
      This library is free software; you can redistribute it and/or
@@ -16,10 +14,11 @@
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
      See the GNU Library General Public License version 2.1 for more details
-     (enclosed in the file LICENSE.txt)
+     (enclosed in the file LICENSE.txt).
 
    Module MParser:
-     The parser combinator library *)
+     The parser combinator library.
+*)
 
 (** For an introduction to monadic parser combinators see the following paper:
 
@@ -37,27 +36,12 @@
 *)
 
 
-(* Utils
+open Printf
+open Utils
+
+
+(* Parser state
    -------------------------------------------------------------------------- *)
-
-module StringSet = Set.Make(String)
-
-(* Returns the sorted list of unique elements in the list of strings [l] *)
-let unique_str (l: string list) : string list =
-  StringSet.elements
-    (List.fold_right StringSet.add l StringSet.empty)
-
-
-(* Parser
-   -------------------------------------------------------------------------- *)
-
-type regexp     = Pcre.regexp
-type substrings = Pcre.substrings
-
-let make_regexp pat =
-  Pcre.regexp pat
-
-(** Parser state *)
 
 type 's state = {
   input:      CharStream.t;
@@ -125,10 +109,9 @@ let match_char s c =
 let match_string s str =
   CharStream.match_string s.input s.index str
 
-let match_regexp s rex =
-  CharStream.match_regexp s.input s.index rex
 
-(** Error handling *)
+(* Error handling
+   -------------------------------------------------------------------------- *)
 
 type pos = int * int * int
 
@@ -204,11 +187,12 @@ let error_line input pos width indent =
 let rec concat_conj conj = function
   |      [ ] -> ""
   | x :: [ ] -> x
-  | x :: [y] -> Printf.sprintf "%s %s %s" x conj y
-  | x :: xs  -> Printf.sprintf "%s, %s" x (concat_conj conj xs)
+  | x :: [y] -> sprintf "%s %s %s" x conj y
+  | x :: xs  -> sprintf "%s, %s" x (concat_conj conj xs)
 
 let rec error_message input pos messages width indent =
   let index, line, column = pos in
+
   let unexp, exp, msg, comp, back, unknowns =
     List.fold_left
       (fun ((u, e, m, c, b, k) as msgs) msg ->
@@ -227,40 +211,40 @@ let rec error_message input pos messages width indent =
                u, e, m, c, b, (k + 1)
            | _ -> msgs)
       ([], [], [], [], [], 0) messages in
+
   let ind = String.make indent ' ' in
   let buf = Buffer.create 160 in
-    Buffer.add_string buf
-      (ind ^ "Error in line " ^ (string_of_int line) ^ ", column "
-       ^ (string_of_int column) ^ ":\n");
-    Buffer.add_string buf
-      (error_line input pos width indent);
-    if unexp <> [] then
-      Buffer.add_string buf
-        (ind ^ "Unexpected " ^ (concat_conj "and" (unique_str unexp)) ^ "\n");
-    if exp <> [] then
-      Buffer.add_string buf
-        (ind ^ "Expecting " ^ (concat_conj "or" (unique_str exp)) ^ "\n");
-    if msg <> [] then
-      if unexp <> [] || exp <> [] then begin
-        Buffer.add_string buf (ind ^ "Other errors:\n");
-        List.iter (fun m -> Buffer.add_string buf (ind ^ "  " ^ m ^ "\n")) msg;
-      end else
-        List.iter (fun m -> Buffer.add_string buf (ind ^ m ^ "\n")) msg;
-    List.iter
-      (fun (s, p, m) ->
-         Buffer.add_string buf
-           (ind ^ s ^ " could not be parsed because:\n");
-         Buffer.add_string buf
-           (error_message input p m width (indent + 2)))
-      comp;
-    List.iter
-      (fun (p, m) ->
-         Buffer.add_string buf
-           (ind ^ "Backtracking occurred after:\n");
-         Buffer.add_string buf
-           (error_message input p m width (indent + 2)))
-      back;
-    Buffer.contents buf
+
+  bprintf buf "%sError in line %d, column %d:\n%s"
+    ind line column (error_line input pos width indent);
+
+  if unexp <> [] then
+    bprintf buf "%sUnexpected %s\n"
+      ind (concat_conj "and" (String.unique unexp));
+
+  if exp <> [] then
+    bprintf buf "%sExpecting %s\n"
+      ind (concat_conj "or" (String.unique exp));
+
+  if msg <> [] then
+    if unexp <> [] || exp <> [] then
+      (bprintf buf "%sOther errors:\n" ind;
+       msg |> List.iter (fun m ->
+         bprintf buf "%s  %s\n" ind m))
+    else
+      msg |> List.iter (fun m ->
+        bprintf buf "%s%s\n" ind m);
+
+  comp |> List.iter (fun (s, p, m) ->
+    bprintf buf "%s%s could not be parsed because:\n%s"
+      ind s (error_message input p m width (indent + 2)));
+
+  back |> List.iter (fun (p, m) ->
+    bprintf buf "%sBacktracking occurred after:\n%s"
+      ind (error_message input p m width (indent + 2)));
+
+  Buffer.contents buf
+
 
 (** Parser type *)
 
@@ -638,7 +622,9 @@ let many_until p q =
 let skip_many_until p q =
   skip_many (not_followed_by q "" >> p) << q
 
-(** User state *)
+
+(* Accessing state
+   -------------------------------------------------------------------------- *)
 
 let get_user_state s =
   Empty_ok (s.user, s, No_error)
@@ -649,10 +635,6 @@ let set_user_state st s =
 let update_user_state f s =
   Empty_ok ((), { s with user = f (s.user) }, No_error)
 
-
-(* Character parsers
-   -------------------------------------------------------------------------- *)
-
 let get_input s =
   Empty_ok (s.input, s, No_error)
 
@@ -662,14 +644,6 @@ let get_index s =
 let get_pos s =
   Empty_ok (pos_of_state s, s, No_error)
 
-let skip n s =
-  if n >= 0 then
-    let s1 = advance_state s n in
-      if s1.index <> s.index then Consumed_ok ((), s1, No_error)
-      else Empty_ok ((), s, No_error)
-  else
-    invalid_arg "FParser.skip: negative offset"
-
 let register_nl lines chars_after_nl s =
   let s1 = {
     s with
@@ -677,6 +651,18 @@ let register_nl lines chars_after_nl s =
       line_begin = s.index - chars_after_nl; }
   in
     Empty_ok ((), s1, No_error)
+
+
+(* Character parsers
+   -------------------------------------------------------------------------- *)
+
+let skip n s =
+  if n >= 0 then
+    let s1 = advance_state s n in
+      if s1.index <> s.index then Consumed_ok ((), s1, No_error)
+      else Empty_ok ((), s, No_error)
+  else
+    invalid_arg "FParser.skip: negative offset"
 
 let eof s =
   match read_char s with
@@ -752,28 +738,6 @@ let any_string n s =
           (expected_error s
              ("any sequence of " ^ (string_of_int n) ^ " characters"))
 
-let regexp r s =
-  match match_regexp s r with
-    | Some substrings ->
-        let result = Pcre.get_substring substrings 0 in
-        let n = String.length result in
-          if n > 0 then
-            Consumed_ok (result, advance_state s n, No_error)
-          else
-            Empty_ok (result, s, No_error)
-    | None -> Empty_failed (unknown_error s)
-
-let regexp_substrings r s =
-  match match_regexp s r with
-    | Some substrings ->
-        let result = Pcre.get_substrings substrings in
-        let n = String.length (Array.get result 0) in
-          if n > 0 then
-            Consumed_ok (result, advance_state s n, No_error)
-          else
-            Empty_ok (result, s, No_error)
-    | None -> Empty_failed (unknown_error s)
-
 let many_chars p s =
   many_fold_apply
     (fun b c -> Buffer.add_char b c; b) (Buffer.create 16)
@@ -815,21 +779,12 @@ let skip_satisfy p =
 let skip_satisfy_l p label=
   satisfy_l p label |>> ignore
 
-(** [for_all p s] returns [true] if [p c = true] for all characters [c] of
-    [s], and [false] otherwise. *)
-let string_for_all p a =
-  let rec for_all i =
-    if i >= String.length a then true
-    else if p (String.unsafe_get a i) then for_all (i + 1)
-    else false
-  in for_all 0
-
 let nsatisfy n p s =
   if n = 0 then
     Empty_ok ("", s, No_error)
   else
     let r = read_string s n in
-      if String.length r = n && string_for_all p r then
+      if String.length r = n && String.for_all p r then
         Consumed_ok (r, advance_state s n, No_error)
       else
         Empty_failed (unknown_error s)
@@ -877,38 +832,6 @@ let any_of str =
 
 let none_of str =
   satisfy (fun x -> not (String.contains str x))
-
-
-module Char = struct
-  include Char
-
-  let is_lowercase c =
-    'a' <= c && c <= 'z'
-
-  let is_uppercase c =
-    'A' <= c && c <= 'Z'
-
-  let is_letter c =
-    is_lowercase c || is_uppercase c
-
-  let is_digit c =
-    '0' <= c && c <= '9'
-
-  let is_hex_digit c =
-       ('0' <= c && c <= '9')
-    || ('a' <= c && c <= 'f')
-    || ('A' <= c && c <= 'F')
-
-  let is_oct_digit c =
-    ('0' <= c && c <= '7')
-
-  let is_alphanum c =
-    is_letter c || is_digit c
-
-  let is_blank c =
-    c = ' ' || c = '\t'
-
-end
 
 let uppercase s =
   satisfy_l Char.is_uppercase "uppercase letter" s
@@ -985,6 +908,10 @@ let spaces1 s =
     | Consumed_ok _ as result -> result
     | _ -> Empty_failed (expected_error s "whitespace")
 
+
+(* Expressions
+   -------------------------------------------------------------------------- *)
+
 type assoc =
   | Assoc_none
   | Assoc_left
@@ -1058,175 +985,43 @@ let expression operators term =
     List.fold_left make_parser term operators
 
 
-(* Token parsers
+(* Regexp-related features
    -------------------------------------------------------------------------- *)
 
-module Tokens = struct
+module MakeRx = functor (Rx: MParser_Regexp.Sig) -> struct
+  module CharStreamRx = CharStream.MakeRx (Rx)
 
-  let symbol s =
-    string s << spaces
+  let match_regexp s rex =
+    CharStreamRx.match_regexp s.input s.index rex
 
-  let skip_symbol s =
-    skip_string s << spaces
+  let make_regexp pat =
+    Rx.make pat
 
-  let char_sp c =
-    char c << spaces
+  let regexp r s =
+    match match_regexp s r with
+      | Some substrings ->
+          (match Rx.get_substring substrings 0 with
+            | Some result ->
+                let n = String.length result in
+                if n > 0 then
+                  Consumed_ok (result, advance_state s n, No_error)
+                else
+                  Empty_ok (result, s, No_error)
+            | None ->
+                zero s)
+      | None ->
+          zero s
 
-  let parens p =
-    between (char_sp '(') (char_sp ')') p
-
-  let braces p =
-    between (char_sp '{') (char_sp '}') p
-
-  let brackets p =
-    between (char_sp '<') (char_sp '>') p
-
-  let squares p =
-    between (char_sp '[') (char_sp ']') p
-
-  let semi s =
-    char_sp ';' s
-
-  let comma s =
-    char_sp ',' s
-
-  let colon s =
-    char_sp ':' s
-
-  let dot s =
-    char_sp '.' s
-
-  let semi_sep p =
-    sep_by p semi
-
-  let semi_sep1 p =
-    sep_by1 p semi
-
-  let semi_sep_end p =
-    sep_end_by p semi
-
-  let semi_sep_end1 p =
-    sep_end_by1 p semi
-
-  let semi_end p =
-    end_by p semi
-
-  let semi_end1 p =
-    end_by1 p semi
-
-  let comma_sep p =
-    sep_by p comma
-
-  let comma_sep1 p =
-    sep_by1 p comma
-
-  let escaped_char s =
-    (any_of "nrtb\\\"\'" |>>
-         (function
-            | 'n' -> '\n'
-            | 'r' -> '\r'
-            | 't' -> '\t'
-            | 'b' -> '\b'
-            | c   -> c)) s
-
-  let escape_sequence_dec =
-    let int_of_dec c =
-      (Char.code c) - (Char.code '0') in
-    let char_of_digits d2 d1 d0 =
-      char_of_int (100 * (int_of_dec d2) + 10 * (int_of_dec d1)
-                   + (int_of_dec d0))
-    in
-      fun s ->
-        (digit >>= fun d2 ->
-         digit >>= fun d1 ->
-         digit >>= fun d0 ->
-         try_return3 char_of_digits d2 d1 d0
-           "Escape sequence is no valid character code" s) s
-
-  let escape_sequence_hex =
-    let int_of_hex c =
-      if      '0' <= c && c <= '9' then (Char.code c) - (Char.code '0')
-      else if 'a' <= c && c <= 'f' then (Char.code c) - (Char.code 'a') + 10
-      else if 'A' <= c && c <= 'F' then (Char.code c) - (Char.code 'A') + 10
-      else failwith "MParser.int_of_hex: no hex digit" in
-    let char_of_digits h1 h0 =
-      char_of_int (16 * (int_of_hex h1) + (int_of_hex h0))
-    in
-      fun s ->
-        (char 'x'  >>
-         hex_digit >>= fun h1 ->
-         hex_digit >>= fun h0 ->
-         try_return2 char_of_digits h1 h0
-           "Escape sequence is no valid character code" s) s
-
-  let escape_sequence s =
-       (escape_sequence_dec
-    <|> escape_sequence_hex) s
-
-  let char_token s =
-       ((char '\\' >> (escaped_char <|> escape_sequence))
-    <|>  any_char) s
-
-  let char_literal s =
-    (char '\'' >> char_token << char_sp '\''
-     <?> "character literal") s
-
-  let string_literal s =
-    (char '"' >> (many_chars_until char_token (char_sp '"'))
-     <?> "string literal") s
-
-  let decimal_r =
-    make_regexp "\\d+"
-
-  let hexadecimal_r =
-    make_regexp "0(x|X)[0-9a-fA-F]+"
-
-  let octal_r =
-    make_regexp "0(o|O)[0-7]+"
-
-  let binary_r =
-    make_regexp "0(b|B)[01]+"
-
-  let integer_r =
-    make_regexp "-?\\d+"
-
-  let float_r =
-    make_regexp "-?\\d+(\\.\\d*)?((e|E)?(\\+|-)?\\d+)?"
-
-  let decimal s =
-    (regexp decimal_r >>= fun digits ->
-     spaces           >>
-     try_return int_of_string digits "Decimal value out of range" s
-     <?> "decimal value") s
-
-  let hexadecimal s =
-    (regexp hexadecimal_r >>= fun digits ->
-     spaces               >>
-     try_return int_of_string digits "Hexadecimal value out of range" s
-     <?> "hexadecimal value") s
-
-  let octal s =
-    (regexp octal_r >>= fun digits ->
-     spaces         >>
-     try_return int_of_string digits "Octal value out of range" s
-     <?> "octal value") s
-
-  let binary s =
-    (regexp binary_r >>= fun digits ->
-     spaces          >>
-     try_return int_of_string digits "Binary value out of range" s
-     <?> "binary value") s
-
-  let integer s =
-    (regexp integer_r >>= fun digits ->
-     spaces           >>
-     try_return int_of_string digits "Integer value out of range" s
-     <?> "integer value") s
-
-  let float s =
-    (regexp float_r >>= fun digits ->
-     spaces         >>
-     try_return float_of_string digits "Not a valid float value" s
-     <?> "float value") s
+  let regexp_substrings r s =
+    match match_regexp s r with
+      | Some substrings ->
+          let result = Rx.get_all_substrings substrings in
+          let n = String.length (Array.get result 0) in
+            if n > 0 then
+              Consumed_ok (result, advance_state s n, No_error)
+            else
+              Empty_ok (result, s, No_error)
+      | None ->
+          zero s
 
 end

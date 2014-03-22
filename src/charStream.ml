@@ -2,9 +2,7 @@
 (* MParser, a simple monadic parser combinator library
    -----------------------------------------------------------------------------
    Copyright (C) 2008, Holger Arnold
-
-   Additional authors:
-     Max Mouratov (ripped the code out of ocaml-base)
+                 2014, Max Mouratov
 
    License:
      This library is free software; you can redistribute it and/or
@@ -16,83 +14,15 @@
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
      See the GNU Library General Public License version 2.1 for more details
-     (enclosed in the file LICENSE.txt)
+     (enclosed in the file LICENSE.txt).
 
    Module CharStream:
-     Character streams *)
+     Character streams.
+*)
 
 
-(* Utils (copy-pasted from ocaml-base's ExtString)
-   -------------------------------------------------------------------------- *)
+open Utils
 
-(** [match_sub s start pat] returns [true] if the string [s] contains the
-    string [pat] as a substring starting at position [start], and [false]
-    otherwise.
-
-    @raise Invalid_argument if [start] is no valid index in [s]. *)
-let string_match_sub s start pat =
-    let len_s = String.length s in
-    let len_pat = String.length pat in
-      if 0 <= start && start < len_s then
-        if start + len_pat > len_s then false
-        else
-          let rec compare i =
-            if i >= len_pat then true
-            else if String.unsafe_get pat i <> String.unsafe_get s (start + i) then false
-            else compare (i + 1)
-          in
-            compare 0
-      else
-        invalid_arg "string_match_sub: invalid index"
-
-(** [match_sub2 s1 start1 s2 start2 len] returns [true] if [sub s1 start1
-    len = sub s2 start2 len], and [false] otherwise.
-
-    @raise Invalid_argument if [start1], [start2], and [len] do not specify
-    valid substrings of [s1] and [s2]. *)
-let string_match_sub2 s1 i1 s2 i2 n =
-  if 0 <= i1 && i1 + n <= String.length s1 &&
-    0 <= i2 && i2 + n <= String.length s2 then
-    let rec compare i =
-      if i >= n then true
-      else if String.unsafe_get s1 (i1 + i) <> String.unsafe_get s2 (i2 + i) then false
-      else compare (i + 1)
-    in compare 0
-  else
-    invalid_arg "string_match_sub2: invalid index"
-
-(** [input chn buffer pos length] reads up to [length] characters from the
-    channel [chn] and stores them in the string [buffer], starting at position
-    [pos].  It returns the actual number of characters read.  A value less
-    than [length] is only returned if there are less than [length] characters
-    available from [chn] (the [input] function in the [Pervasives] module is
-    allowed to read less than [length] characters if it "finds it convenient
-    to do a partial read").
-
-    @raise Invalid_argument if [pos] and [length] do not specify a valid
-    substring of [buffer]. *)
-let io_input chn buffer pos length =
-  if 0 <= pos && pos + length <= String.length buffer then
-    let chars_read = ref 0 in
-    let stop       = ref false in
-      while not !stop do
-        let chars =
-          Pervasives.input chn buffer
-            (pos + !chars_read) (length - !chars_read)
-        in
-          if chars > 0 then chars_read := !chars_read + chars
-          else stop := true
-      done;
-      !chars_read
-  else
-    invalid_arg "io_input: invalid substring"
-
-
-(* Character streams
-   -------------------------------------------------------------------------- *)
-
-type regexp     = Pcre.regexp
-type substrings = Pcre.substrings
 
 type char_stream = {
 
@@ -123,7 +53,7 @@ type t = char_stream
     @raise Failure if less than [length] characters could be read.
 *)
 let read_block s pos length =
-  if io_input s.input s.buffer pos length = length then ()
+  if IO.input s.input s.buffer pos length = length then ()
   else failwith "CharStream.read_block: I/O error"
 
 let from_string str =
@@ -284,10 +214,10 @@ let match_string s pos str =
       if len > chars_left s pos then
         false
       else if is_visible s pos && is_visible s (pos + len - 1) then
-        string_match_sub s.buffer (pos - s.buffer_pos) str
+        String.match_sub s.buffer (pos - s.buffer_pos) str
       else if len <= s.block_overlap then begin
         perform_unsafe_seek s pos;
-        string_match_sub s.buffer (pos - s.buffer_pos) str
+        String.match_sub s.buffer (pos - s.buffer_pos) str
       end else begin
         let result = ref true in
         let chars_left = ref len in
@@ -295,32 +225,31 @@ let match_string s pos str =
           seek_in s.input pos;
           while !chars_left > 0 do
             let nchars = min s.block_size !chars_left in
-              read_block s 0 nchars;
-              if string_match_sub2 str !chars_read s.buffer 0 nchars then begin
-                chars_left := !chars_left - nchars;
-                chars_read := !chars_read + nchars
-              end else begin
-                result := false;
-                chars_left := 0
-              end
+            read_block s 0 nchars;
+            if String.match_sub2 str !chars_read s.buffer 0 nchars then
+              (chars_left := !chars_left - nchars;
+               chars_read := !chars_read + nchars)
+            else
+              (result := false;
+               chars_left := 0)
           done;
           !result
       end
   else
     str = ""
 
-let pcre_default_flags =
-  Pcre.rflags [`ANCHORED]
 
-let match_regexp s pos rex =
-  if is_valid_pos s pos then begin
-    if not (is_visible s pos && is_visible s (pos + s.min_rspace)) then
-      perform_unsafe_seek s pos;
-    try
-      Some (Pcre.exec
-              ~iflags:pcre_default_flags ~rex:rex
-              ~pos:(pos - s.buffer_pos) s.buffer)
-    with Not_found ->
+(* Regexp-related features
+   -------------------------------------------------------------------------- *)
+
+module MakeRx = functor (Rx: MParser_Regexp.Sig) -> struct
+
+  let match_regexp s pos rex =
+    if is_valid_pos s pos then begin
+      if not (is_visible s pos && is_visible s (pos + s.min_rspace)) then
+        perform_unsafe_seek s pos;
+      Rx.exec ~rex ~pos:(pos - s.buffer_pos) s.buffer
+    end else
       None
-  end else
-    None
+
+end

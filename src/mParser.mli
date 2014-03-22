@@ -2,9 +2,7 @@
 (* MParser, a simple monadic parser combinator library
    -----------------------------------------------------------------------------
    Copyright (C) 2008, Holger Arnold
-
-   Additional authors:
-     Max Mouratov (ripped the code out of ocaml-base)
+                 2014, Max Mouratov
 
    License:
      This library is free software; you can redistribute it and/or
@@ -16,10 +14,11 @@
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
      See the GNU Library General Public License version 2.1 for more details
-     (enclosed in the file LICENSE.txt)
+     (enclosed in the file LICENSE.txt).
 
    Module MParser:
-     The parser combinator library *)
+     The parser combinator library.
+*)
 
 (** The [MParser] module is a monadic parser combinator library. The parser
     combinators provided by this module can be used to build parsers for
@@ -43,20 +42,11 @@
     differs, [MParser] generally behaves like FParsec (but there might be
     exceptions).
 
-    A significant drawback of this module is that it relies on the standard
-    OCaml types [char] and [string] and therefore there is {e currently no
-    support for Unicode}.
+    A significant drawback of the implementation is that it relies on the
+    standard OCaml types [char] and [string] and therefore there is
+    {e currently no support for Unicode}.
 *)
 
-
-type regexp = Pcre.regexp
-(** The type of regular expressions. *)
-
-type substrings = Pcre.substrings
-(** The type of substrings matched by a regular expression. *)
-
-val make_regexp: string -> regexp
-(** Creates a regular expression from a string. *)
 
 (** {2 Parser state}
 
@@ -133,18 +123,6 @@ val match_string: 's state -> string -> bool
 (** [match_string s str] returns [true] if the input starting at the current
     position matches the string [str], and [false] otherwise. *)
 
-val match_regexp: 's state -> regexp -> substrings option
-(** [match_regexp s rex] matches the regular expression [rex] against the
-    input.  It returns [Some substrings] if the match succeeds, where
-    [substrings] contains the matched substrings.  If the match fails or if
-    the current position is already behind the last position of the input, it
-    returns [None].
-
-    If the input is read from a (large) file, [rex] is not necessarily matched
-    against the complete remaining substring.  The minimum number of
-    characters that are guaranteed to be used for matching is specified when
-    creating the input character stream.  See the documentation of the
-    {!CharStream} module for more information. *)
 
 (** {2 Error handling and reporting}
 
@@ -622,26 +600,6 @@ val any_string: int -> (string, 's) parser
 (** [any_string n] parses any string of [n] characters and returns it.  Fails
     if there are less than [n] characters left in the input.  *)
 
-val regexp: regexp -> (string, 's) parser
-(** [regexp rex] parses any string matching the regular expression [rex] and
-    returns it.
-
-    If the input is read from a (large) file, [rex] is not necessarily matched
-    against the complete remaining substring.  The minimum number of
-    characters that are guaranteed to be used for matching is specified when
-    creating the input character stream.  See the documentation of the
-    {!CharStream} module for more information. *)
-
-val regexp_substrings: regexp -> (string array, 's) parser
-(** [regexp rex] parses any string matching the regular expression [rex] and
-    returns an array containing all matched substrings.
-
-    If the input is read from a (large) file, [rex] is not necessarily matched
-    against the complete remaining substring.  The minimum number of
-    characters that are guaranteed to be used for matching is specified when
-    creating the input character stream.  See the documentation of the
-    {!CharStream} module for more information. *)
-
 val many_chars: (char, 's) parser -> (string, 's) parser
 (** [many_chars p] parses zero or more occurrences of [p] and returns a string
     of the results returned by [p].
@@ -837,122 +795,45 @@ val expression: (('a, 's) operator list) list -> ('a, 's) parser -> ('a, 's) par
     ]}
 *)
 
-(** Predefined tokens parsers.
 
-    This module provides parsers for tokens that are commonly used in parsing
-    computer languages.  All parsers in this module skip the spaces (as
-    defined by the {!MParser.spaces} parser) that occur after a token.  Where
-    they are applied to a user-defined parser [p], however, they do not skip
-    the spaces occurring after the characters parsed by [p].  For example,
-    [parens p] is equivalent to [char '(' >> spaces >> p << char ')' <<
-    spaces].
-*)
-module Tokens:
-sig
+(** {2 Regexp-related features} *)
 
-  val symbol: string -> (string, 's) parser
-  (** [symbol sym] parses the literal string [sym] and returns it. *)
+module MakeRx: functor (Rx: MParser_Regexp.Sig) -> sig
 
-  val skip_symbol: string -> (unit, 's) parser
-  (** [skip_symbol sym] parses the literal string [sym] and returns [()]. *)
+  val match_regexp: 's state -> Rx.t -> Rx.substrings option
+  (** [match_regexp s rex] matches the regular expression [rex] against the
+      input.  It returns [Some substrings] if the match succeeds, where
+      [substrings] contains the matched substrings.  If the match fails or if
+      the current position is already behind the last position of the input, it
+      returns [None].
 
-  val parens: ('a, 's) parser -> ('a, 's) parser
-  (** [parens p] parses [p] between parentheses ['('] and [')']. *)
+      If the input is read from a (large) file, [rex] is not necessarily matched
+      against the complete remaining substring.  The minimum number of
+      characters that are guaranteed to be used for matching is specified when
+      creating the input character stream. See the documentation of the
+      {!CharStream} module for more information. *)
 
-  val braces: ('a, 's) parser -> ('a, 's) parser
-  (** [braces p] parses [p] between curly braces ['{'] and ['}']. *)
+  val make_regexp: string -> Rx.t
+  (** Creates a regular expression from a string. *)
 
-  val brackets: ('a, 's) parser -> ('a, 's) parser
-  (** [brackets p] parses [p] between angle brackets ['<'] and ['>']. *)
+  val regexp: Rx.t -> (string, 's) parser
+  (** [regexp rex] parses any string matching the regular expression [rex] and
+      returns it.
 
-  val squares: ('a, 's) parser -> ('a, 's) parser
-  (** [squares p] parses [p] between square brackets ['\['] and ['\]']. *)
+      If the input is read from a (large) file, [rex] is not necessarily matched
+      against the complete remaining substring.  The minimum number of
+      characters that are guaranteed to be used for matching is specified when
+      creating the input character stream.  See the documentation of the
+      {!CharStream} module for more information. *)
 
-  val semi: (char, 's) parser
-  (** Parses a semicolon [';']. *)
+  val regexp_substrings: Rx.t -> (string array, 's) parser
+  (** [regexp_substrings rex] parses any string matching the regular expression
+      [rex] and returns an array containing all matched substrings.
 
-  val comma: (char, 's) parser
-  (** Parses a comma [',']. *)
-
-  val colon: (char, 's) parser
-  (** Parses a colon [':']. *)
-
-  val dot: (char, 's) parser
-  (** Parses a dot ['.']. *)
-
-  val semi_sep: ('a, 's) parser -> ('a list, 's) parser
-  (** [semi_sep p] parses zero or more occurrences of [p], separated by [';'].
-      It returns a list of the results returned by [p]. *)
-
-  val semi_sep1: ('a, 's) parser -> ('a list, 's) parser
-  (** [semi_sep1 p] parses one or more occurrences of [p], separated by [';'].
-      It returns a list of the results returned by [p]. *)
-
-  val semi_sep_end: ('a, 's) parser -> ('a list, 's) parser
-  (** [semi_sep_end p] parses zero or more occurrences of [p], separated and
-      optionally ended by [';'].  It returns a list of the results returned by
-      [p]. *)
-
-  val semi_sep_end1: ('a, 's) parser -> ('a list, 's) parser
-  (** [semi_sep_end1 p] parses one or more occurrences of [p], separated and
-      optionally ended by [';'].  It returns a list of the results returned by
-      [p]. *)
-
-  val semi_end: ('a, 's) parser -> ('a list, 's) parser
-  (** [semi_end p] parses zero or more occurrences of [p], separated and ended
-      by [';'].  It returns a list of the results returned by [p]. *)
-
-  val semi_end1: ('a, 's) parser -> ('a list, 's) parser
-  (** [semi_sep_end1 p] parses one or more occurrences of [p], separated and
-      ended by [';'].  It returns a list of the results returned by [p]. *)
-
-  val comma_sep: ('a, 's) parser -> ('a list, 's) parser
-  (** [comma_sep p] parses zero or more occurrences of [p], separated by
-      [','].  It returns a list of the results returned by [p]. *)
-
-  val comma_sep1: ('a, 's) parser -> ('a list, 's) parser
-  (** [comma_sep1 p] parses one or more occurrences of [p], separated by
-      [','].  It returns a list of the results returned by [p]. *)
-
-  val char_literal: (char, 's) parser
-  (** Parses a character literal as defined in the OCaml language and returns
-      the character.  The literal may contain an escape sequence. *)
-
-  val string_literal: (string, 's) parser
-  (** Parses a string literal as defined in the OCaml language and returns the
-      string.  The literal may contain escape sequences. *)
-
-  val decimal: (int, 's) parser
-  (** Parses a decimal natural number and returns it as an integer value.
-      Fails with a [Message_error] if the parsed number is larger than
-      [max_int]. *)
-
-  val hexadecimal: (int, 's) parser
-  (** Parses a hexadecimal natural number as defined in the OCaml language
-      (prefixed with ["0x"] or ["0X"]) and returns it as an integer value.
-      Fails with a [Message_error] if the parsed number is larger than
-      [max_int]. *)
-
-  val octal: (int, 's) parser
-  (** Parses an octal natural number as defined in the OCaml language
-      (prefixed with ["0o"] or ["0O"]) and returns it as an integer value.
-      Fails with a [Message_error] if the parsed number is larger than
-      [max_int]. *)
-
-  val binary: (int, 's) parser
-  (** Parses a binary natural number as defined in the OCaml language
-      (prefixed with ["0b"] or ["0B"]) and returns it as an integer value.
-      Fails with a [Message_error] if the parsed number is larger than
-      [max_int]. *)
-
-  val integer: (int, 's) parser
-  (** Parses a decimal integer number and returns its value.  Fails with a
-      [Message_error] if the parsed number is smaller than [min_int] or larger
-      than [max_int]. *)
-
-  val float: (float, 's) parser
-  (** Parses floating-point literal as defined in the OCaml language and
-      returns its value.  Fails with a [Message_error] if the parsed number is
-      not a valid representation of a [float] value. *)
+      If the input is read from a (large) file, [rex] is not necessarily matched
+      against the complete remaining substring.  The minimum number of
+      characters that are guaranteed to be used for matching is specified when
+      creating the input character stream.  See the documentation of the
+      {!CharStream} module for more information. *)
 
 end
