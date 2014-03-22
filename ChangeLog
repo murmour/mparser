@@ -1,15 +1,27 @@
-2013-05-02  Max Mouratov  <mmouratov(_)gmail.com>
+2014-03-23  Max Mouratov  <mmouratov@gmail.com>
+
+	Version 1.1
+
+	* New: Support for pluggable regular expression engines.
+	* New: PCRE-related functionality is split out into a separate,
+	optional subpackage (MParser_PCRE).
+	* New: MParser_RE: support for different kinds of RE-based regular
+	expressions (re.perl, re.emacs, re.posix, re.glob).
+	* Fix: .cmxs files (native plugins) are built correctly now.
+
+
+2013-05-02  Max Mouratov  <mmouratov@gmail.com>
 
 	Version 1.0.1
 
 	* Fix: 'expecting' and 'unexpected' error messages must not
-	contain duplicate items
-	* New: A tutorial section in the README file
+	contain duplicate items.
+	* New: A tutorial section in the README file.
 
 
-2013-01-22  Max Mouratov  <mmouratov(_)gmail.com>
+2013-01-22  Max Mouratov  <mmouratov@gmail.com>
 
 	Version 1.0 (initial version after ripping the code out of ocaml-base)
 
-	* Fix: A bug in MParser.option
-        * New: MParser.bind (for the sake of compatibility with pa_monad)
+	* Fix: A bug in [MParser.option].
+        * New: [MParser.bind] (for the sake of compatibility with pa_monad).
