@@ -1,5 +1,5 @@
 ===================================================
-mParser, a simple monadic parser combinator library
+MParser, a simple monadic parser combinator library
 ===================================================
 
 This library implements a rather complete and efficient monadic parser
@@ -12,10 +12,10 @@ See the file LICENSE.txt for copying conditions.
 Home page: https://bitbucket.org/cakeplus/mparser
 
 
-mParser used to be a part of ocaml-base, a collection of useful OCaml
+MParser used to be a part of ocaml-base, a collection of useful OCaml
 libraries by Holger Arnold [1]_.
 
-The monadic interface of mParser is compatible with pa_monad [2]_.
+The monadic interface of MParser is compatible with pa_monad [2]_.
 
 The only dependency is the PCRE-OCaml library [3]_.
 

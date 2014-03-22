@@ -1,4 +1,4 @@
-Name            : mParser
+Name            : MParser
 Version         : 1.0.1
 Synopsis        : A simple monadic parser combinator library
 Authors         : Holger Arnold, Max Mouratov
