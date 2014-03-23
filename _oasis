@@ -59,8 +59,7 @@ Library mparser_re
   Path              : src
   Modules           : MParser_RE
   FindlibParent     : mparser
-  FindlibContainers : re
-  FindlibName       : emacs
+  FindlibName       : re
   BuildDepends      : mparser, re.emacs, re.posix, re.glob, re.perl
 
 
