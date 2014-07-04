@@ -18,31 +18,9 @@
 
    Module MParser_RE:
      RE-based regular expression parsers.
+     The used syntax is re.perl (the one most similar to PCRE).
 *)
 
 
-(* Perl-style (PCRE-alike) *)
-module Perl: sig
-  module Regexp: MParser_Regexp.Sig
-  include module type of MParser.MakeRx (Regexp)
-end
-
-(* Emacs-style *)
-module Emacs: sig
-  module Regexp: MParser_Regexp.Sig
-  include module type of MParser.MakeRx (Regexp)
-end
-
-(* POSIX-style
-   (http://www.opengroup.org/onlinepubs/007908799/xbd/re.html,
-    http://www.opengroup.org/onlinepubs/007908799/xsh/regcomp.html) *)
-module POSIX: sig
-  module Regexp: MParser_Regexp.Sig
-  include module type of MParser.MakeRx (Regexp)
-end
-
-(* Shell-style *)
-module Glob: sig
-  module Regexp: MParser_Regexp.Sig
-  include module type of MParser.MakeRx (Regexp)
-end
+module Regexp: MParser_Regexp.Sig
+include module type of MParser.MakeRx (Regexp)

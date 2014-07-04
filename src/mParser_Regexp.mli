@@ -17,7 +17,7 @@
      (enclosed in the file LICENSE.txt).
 
    Module MParser_Regexp:
-     The interface of a pluggable regular expression engine
+     The interface of a pluggable regular expression engine.
 *)
 
 

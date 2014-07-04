@@ -1,12 +1,11 @@
-2014-03-23  Max Mouratov  <mmouratov@gmail.com>
+2014-07-04  Max Mouratov  <mmouratov@gmail.com>
 
 	Version 1.1
 
 	* New: Support for pluggable regular expression engines.
-	* New: PCRE-related functionality is split out into a separate,
-	optional subpackage (MParser_PCRE).
-	* New: MParser_RE: support for different kinds of RE-based regular
-	expressions (re.perl, re.emacs, re.posix, re.glob).
+	* New (MParser_PCRE): PCRE-related functionality is split out into a
+	separate, optional subpackage.
+	* New (MParser_RE): support for RE-based regular expressions.
 	* Fix: .cmxs files (native plugins) are built correctly now.
 
 
