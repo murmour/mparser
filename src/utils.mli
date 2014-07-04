@@ -21,6 +21,10 @@
 *)
 
 
+val ( |> ): 'a -> ('a -> 'b) -> 'b
+(** Function application. [x |> f] is equivalent to [f x]. *)
+
+
 module IO: sig
 
   val input: in_channel -> string -> int -> int -> int
