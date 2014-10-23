@@ -164,28 +164,38 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
   (* Error reporting
      ------------------------------------------------------------------------ *)
 
-  let error_line input pos width indent =
-    let rec find_nl i stop =
-      if i >= stop then i else
-        match Stream.read_char input i with
+  let error_line input pos width indent : string Ch.Monad.t =
+    let open Ch.Monad in
+
+    let rec find_nl i stop : int Ch.Monad.t =
+      if i >= stop then
+        return i
+      else
+        Stream.read_char input i >>= function
           | None | Some '\n' | Some '\r' ->
-              i
+              return i
           | _ ->
               find_nl (i + 1) stop
     in
+
     let space = width - indent in
-    if space > 10 then
-      let index, _, column = pos in
+    if space <= 10 then
+      return "\n"
+    else
+      let (index, _, column) = pos in
       let start = index - (min (column - 1) (space / 2)) in
       let stop = min (start + space) (Stream.length input) in
-      let length = (find_nl start stop) - start in
-      let offset = index - start in
-      if length > 0 then
-        (String.make indent ' ')
-        ^ (Stream.read_string input start length) ^ "\n"
-        ^ (String.make (indent + offset) ' ') ^ "^\n"
-      else "\n"
-    else "\n"
+      find_nl start stop >>= fun nl ->
+      let length = nl - start in
+      if length <= 0 then
+        return "\n"
+      else
+        Stream.read_string input start length >>= fun s ->
+        let offset = index - start in
+        return
+          ((String.make indent ' ')
+           ^ s ^ "\n"
+           ^ (String.make (indent + offset) ' ') ^ "^\n")
 
   (** [concat_conj sep conj strings] concatenates the elements of [strings]
       using the separator [sep] and the conjunction [conj] according to the
@@ -197,10 +207,11 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
     | x :: [y] -> sprintf "%s %s %s" x conj y
     | x :: xs  -> sprintf "%s, %s" x (concat_conj conj xs)
 
-  let rec error_message input pos messages width indent =
-    let index, line, column = pos in
+  let rec error_message input pos messages width indent : string Ch.Monad.t =
+    let open Ch.Monad in
+    let (index, line, column) = pos in
 
-    let unexp, exp, msg, comp, back, unknowns =
+    let (unexp, exp, msg, comp, back, unknowns) =
       messages |> ListLabels.fold_left ~init:([], [], [], [], [], 0)
         ~f:(fun ((u, e, m, c, b, k) as msgs) msg ->
           match msg with
@@ -220,11 +231,12 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
                 msgs)
     in
 
-    let ind = String.make indent ' ' in
+    error_line input pos width indent >>= fun err ->
     let buf = Buffer.create 160 in
+    let ind = String.make indent ' ' in
 
     bprintf buf "%sError in line %d, column %d:\n%s"
-      ind line column (error_line input pos width indent);
+      ind line column err;
 
     if unexp <> [] then
       bprintf buf "%sUnexpected %s\n"
@@ -243,18 +255,21 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
         msg |> List.iter (fun m ->
           bprintf buf "%s%s\n" ind m);
 
-    comp |> List.iter (fun (s, p, m) ->
-      bprintf buf "%s%s could not be parsed because:\n%s"
-        ind s (error_message input p m width (indent + 2)));
+    (comp |> Ch.Monad.iter_s (fun (s, p, m) ->
+       error_message input p m width (indent + 2) >>= fun msg ->
+       return (bprintf buf "%s%s could not be parsed because:\n%s" ind s msg)))
+    >>
 
-    back |> List.iter (fun (p, m) ->
-      bprintf buf "%sBacktracking occurred after:\n%s"
-        ind (error_message input p m width (indent + 2)));
+    (back |> Ch.Monad.iter_s (fun (p, m) ->
+       error_message input p m width (indent + 2) >>= fun msg ->
+       return (bprintf buf "%sBacktracking occurred after:\n%s" ind msg)))
+    >>
 
-    Buffer.contents buf
+    return (Buffer.contents buf)
 
 
-  (** Parser type *)
+  (* Parsing status
+     ------------------------------------------------------------------------ *)
 
   type ('a, 's) reply =
     | Empty_failed of error
@@ -262,7 +277,7 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
     | Consumed_failed of error
     | Consumed_ok of 'a * 's state * error
 
-  type ('a, 's) parser = 's state -> ('a, 's) reply
+  type ('a, 's) parser = 's state -> ('a, 's) reply Ch.Monad.t
 
   type ('a, 's) t = ('a, 's) parser
 
@@ -318,23 +333,26 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
     | Success of 'a
     | Failed of string * error
 
-  let parse p input user =
-    match p (init input user) with
+  let parse (p: ('a, 's) parser) (input: Stream.t) user =
+    let open Ch.Monad in
+    p (init input user) >>= function
       | Empty_ok (x, _, _) | Consumed_ok (x, _, _) ->
-          Success x
+          return (Success x)
       | Empty_failed e | Consumed_failed e ->
           (match e with
             | Parse_error (pos, messages) ->
-                Failed (error_message input pos messages 78 0, e)
+                error_message input pos messages 78 0 >>= fun msg ->
+                return (Failed (msg, e))
             | No_error ->
-                Failed ("", e))
+                return (Failed ("", e)))
 
   let parse_string p str user =
     let input = Stream.from_string str in
     parse p input user
 
   let parse_channel p chn user =
-    let input = Stream.from_channel chn in
+    let open Ch.Monad in
+    Stream.from_channel chn >>= fun input ->
     parse p input user
 
 
@@ -342,60 +360,65 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
      ------------------------------------------------------------------------ *)
 
   let return x s =
-    Empty_ok (x, s, No_error)
+    let open Ch.Monad in
+    return (Empty_ok (x, s, No_error))
 
   let try_return f x msg s0 s1 =
+    let open Ch.Monad in
     try
-      Empty_ok (f x, s1, No_error)
+      return (Empty_ok (f x, s1, No_error))
     with _ ->
-      Empty_failed (message_error s0 msg)
+      return (Empty_failed (message_error s0 msg))
 
   let try_return2 f x1 x2 msg s0 s1 =
+    let open Ch.Monad in
     try
-      Empty_ok (f x1 x2, s1, No_error)
+      return (Empty_ok (f x1 x2, s1, No_error))
     with _ ->
-      Empty_failed (message_error s0 msg)
+      return (Empty_failed (message_error s0 msg))
 
   let try_return3 f x1 x2 x3 msg s0 s1 =
+    let open Ch.Monad in
     try
-      Empty_ok (f x1 x2 x3, s1, No_error)
+      return (Empty_ok (f x1 x2 x3, s1, No_error))
     with _ ->
-      Empty_failed (message_error s0 msg)
+      return (Empty_failed (message_error s0 msg))
 
   let fail msg s =
-    Consumed_failed (message_error s msg)
+    Ch.Monad.return (Consumed_failed (message_error s msg))
 
   let message msg s =
-    Empty_failed (message_error s msg)
+    Ch.Monad.return (Empty_failed (message_error s msg))
 
   let zero s =
-    Empty_failed (unknown_error s)
+    Ch.Monad.return (Empty_failed (unknown_error s))
 
   let bind p f s =
-    match p s with
+    let open Ch.Monad in
+    p s >>= function
       | Empty_failed e1 ->
-          Empty_failed e1
+          return (Empty_failed e1)
 
       | Consumed_failed e1 ->
-          Consumed_failed e1
+          return (Consumed_failed e1)
 
       | Empty_ok (r1, s1, e1) ->
-          (match f r1 s1 with
+          (f r1 s1 >>= function
             | Empty_failed e2 ->
-                Empty_failed (merge_errors e2 e1)
+                return (Empty_failed (merge_errors e2 e1))
             | Empty_ok (r2, s2, e2) ->
-                Empty_ok (r2, s2, merge_errors e2 e1)
+                return (Empty_ok (r2, s2, merge_errors e2 e1))
             | consumed ->
-                consumed)
+                return consumed)
 
       | Consumed_ok (r1, s1, e1) ->
-          (match f r1 s1 with
+          (f r1 s1 >>= function
             | Empty_failed e2 ->
-                Consumed_failed (merge_errors e2 e1)
+                return (Consumed_failed (merge_errors e2 e1))
             | Empty_ok (r2, s2, e2) ->
-                Consumed_ok (r2, s2, merge_errors e2 e1)
+                return (Consumed_ok (r2, s2, merge_errors e2 e1))
             | consumed ->
-                consumed)
+                return consumed)
 
   let (>>=) = bind
 
@@ -409,30 +432,31 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
     p >> return x
 
   let (>>?) p q s =
-    match p s with
+    let open Ch.Monad in
+    p s >>= function
       | Empty_failed e1 ->
-          Empty_failed e1
+          return (Empty_failed e1)
 
       | Consumed_failed e1 ->
-          Consumed_failed e1
+          return (Consumed_failed e1)
 
       | Empty_ok (_, s1, e1) ->
-          (match q s1 with
+          (q s1 >>= function
             | Empty_failed e2 ->
-                Empty_failed (merge_errors e2 e1)
+                return (Empty_failed (merge_errors e2 e1))
             | Empty_ok (r2, s2, e2) ->
-                Empty_ok (r2, s2, merge_errors e2 e1)
+                return (Empty_ok (r2, s2, merge_errors e2 e1))
             | consumed ->
-                consumed)
+                return consumed)
 
       | Consumed_ok (_, s1, e1) ->
-          (match q s1 with
+          (q s1 >>= function
             | Empty_failed e2 ->
-                Empty_failed (backtrack_error s (merge_errors e2 e1))
+                return (Empty_failed (backtrack_error s (merge_errors e2 e1)))
             | Empty_ok (r2, s2, e2) ->
-                Consumed_ok (r2, s2, merge_errors e2 e1)
+                return (Consumed_ok (r2, s2, merge_errors e2 e1))
             | consumed ->
-                consumed)
+                return consumed)
 
   let (|>>) p f =
     p >>= fun x -> return (f x)
@@ -456,17 +480,18 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
     return (f x1 x2 x3 x4)
 
   let (<|>) p1 p2 s =
-    match p1 s with
+    let open Ch.Monad in
+    p1 s >>= function
       | Empty_failed e1 ->
-          (match p2 s with
+          (p2 s >>= function
             | Empty_failed e2 ->
-                Empty_failed (merge_errors e2 e1)
+                return (Empty_failed (merge_errors e2 e1))
             | Empty_ok (r2, s2, e2) ->
-                Empty_ok (r2, s2, (merge_errors e2 e1))
+                return (Empty_ok (r2, s2, (merge_errors e2 e1)))
             | consumed ->
-                consumed)
-
-      | other -> other
+                return consumed)
+      | other ->
+          return other
 
   let (<|>$) p x =
     p <|> return x
@@ -475,58 +500,64 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
     List.fold_left (<|>) zero ps
 
   let attempt p s =
-    match p s with
+    let open Ch.Monad in
+    p s >>= function
       | Consumed_failed e ->
-          Empty_failed (backtrack_error s e)
+          return (Empty_failed (backtrack_error s e))
       | other ->
-          other
+          return other
 
   let (<?>) p label s =
-    let reply = p s in
-      if is_empty reply then
-        set_error reply (expected_error s label)
-      else
-        reply
+    let open Ch.Monad in
+    p s >>= fun reply ->
+    if is_empty reply then
+      return (set_error reply (expected_error s label))
+    else
+      return reply
 
   let (<??>) p label s =
-    let reply = p s in
-      if is_empty reply then
-        if is_error reply then
-          match get_error reply with
-            | Parse_error (pos, [Backtrack_error error]) ->
-                set_error reply (compound_error s label error)
-            | _ ->
-                set_error reply (expected_error s label)
-        else
-          set_error reply (expected_error s label)
+    let open Ch.Monad in
+    p s >>= fun reply ->
+    if is_empty reply then
+      if is_error reply then
+        match get_error reply with
+          | Parse_error (pos, [Backtrack_error error]) ->
+              return (set_error reply (compound_error s label error))
+          | _ ->
+              return (set_error reply (expected_error s label))
       else
-        if is_error reply then
-          set_error reply (compound_error s label (get_error reply))
-        else
-          reply
+        return (set_error reply (expected_error s label))
+    else
+    if is_error reply then
+      return (set_error reply (compound_error s label (get_error reply)))
+    else
+      return reply
 
   let look_ahead p s =
-    match p s with
+    let open Ch.Monad in
+    p s >>= function
       | Empty_ok (r, _, _) | Consumed_ok (r, _, _) ->
-          Empty_ok (r, s, No_error)
+          return (Empty_ok (r, s, No_error))
       | Empty_failed e ->
-          Empty_failed e
+          return (Empty_failed e)
       | Consumed_failed e ->
-          Empty_failed (backtrack_error s e)
+          return (Empty_failed (backtrack_error s e))
 
   let followed_by p msg s =
-    match p s with
+    let open Ch.Monad in
+    p s >>= function
       | Empty_ok _ | Consumed_ok _ ->
-          Empty_ok ((), s, No_error)
+          return (Empty_ok ((), s, No_error))
       | Empty_failed e | Consumed_failed e ->
-          Empty_failed (expected_error s msg)
+          return (Empty_failed (expected_error s msg))
 
   let not_followed_by p msg s =
-    match p s with
+    let open Ch.Monad in
+    p s >>= function
       | Empty_ok _ | Consumed_ok _ ->
-          Empty_failed (unexpected_error s msg)
+          return (Empty_failed (unexpected_error s msg))
       | Empty_failed e | Consumed_failed e ->
-          Empty_ok ((), s, No_error)
+          return (Empty_ok ((), s, No_error))
 
   let opt x p =
     p <|>$ x
@@ -546,25 +577,27 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
     return (x, y)
 
   let many_fold_apply f a g p =
+    let open Ch.Monad in
     let rec loop consumed a s e =
-      match p s with
+      p s >>= function
         | Consumed_ok (r, s1, e1) ->
             loop true (f a r) s1 e1
         | Consumed_failed e1 ->
-            Consumed_failed e1
+            return (Consumed_failed e1)
         | Empty_failed e1 ->
-            make_ok consumed (g a) s (merge_errors e1 e)
+            return (make_ok consumed (g a) s (merge_errors e1 e))
         | Empty_ok _ ->
             failwith "MParser.many_fold_apply: parser accepts the empty string"
     in
     fun s -> loop false a s No_error
 
   let many1_fold_apply f a g p s =
-    match many_fold_apply f a g p s with
+    let open Ch.Monad in
+    many_fold_apply f a g p s >>= function
       | Empty_ok (_, _, e) ->
-          Empty_failed e
+          return (Empty_failed e)
       | other ->
-          other
+          return other
 
   let many p =
     many_fold_apply (fun xs x -> x :: xs) [] List.rev p
@@ -620,39 +653,41 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
     chain_right1 p op <|>$ x
 
   let count n p =
+    let open Ch.Monad in
     let rec loop consumed n l s e =
       if n > 0 then
-        match p s with
+        p s >>= function
           | Empty_ok (r, s1, e1) ->
               loop consumed (n - 1) (r :: l) s1 (merge_errors e1 e)
           | Consumed_ok (r, s1, e1) ->
               loop true (n - 1) (r :: l) s1 e1
           | Empty_failed e1 ->
-              make_failed consumed (merge_errors e1 e)
+              return (make_failed consumed (merge_errors e1 e))
           | Consumed_failed e1 ->
-              Consumed_failed e1
+              return (Consumed_failed e1)
       else
         if consumed then
-          Consumed_ok (List.rev l, s, e)
+          return (Consumed_ok (List.rev l, s, e))
         else
-          Empty_ok (List.rev l, s, e)
+          return (Empty_ok (List.rev l, s, e))
     in
     fun s -> loop false n [] s No_error
 
   let skip_count n p =
+    let open Ch.Monad in
     let rec loop consumed n s e =
       if n > 0 then
-        match p s with
+        p s >>= function
           | Empty_ok (_, s1, e1) ->
               loop consumed (n - 1) s1 (merge_errors e1 e)
           | Consumed_ok (_, s1, e1) ->
               loop true (n - 1) s1 e1
           | Empty_failed e1 ->
-              make_failed consumed (merge_errors e1 e)
+              return (make_failed consumed (merge_errors e1 e))
           | Consumed_failed e1 ->
-              Consumed_failed e1
+              return (Consumed_failed e1)
       else
-        make_ok consumed () s e
+        return (make_ok consumed () s e)
     in
     fun s -> loop false n s No_error
 
@@ -693,22 +728,22 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
      ------------------------------------------------------------------------ *)
 
   let get_user_state s =
-    Empty_ok (s.user, s, No_error)
+    Ch.Monad.return (Empty_ok (s.user, s, No_error))
 
   let set_user_state st s =
-    Empty_ok ((), { s with user = st }, No_error)
+    Ch.Monad.return (Empty_ok ((), { s with user = st }, No_error))
 
   let update_user_state f s =
-    Empty_ok ((), { s with user = f (s.user) }, No_error)
+    Ch.Monad.return (Empty_ok ((), { s with user = f (s.user) }, No_error))
 
   let get_input s =
-    Empty_ok (s.input, s, No_error)
+    Ch.Monad.return (Empty_ok (s.input, s, No_error))
 
   let get_index s =
-    Empty_ok (s.index, s, No_error)
+    Ch.Monad.return (Empty_ok (s.index, s, No_error))
 
   let get_pos s =
-    Empty_ok (pos_of_state s, s, No_error)
+    Ch.Monad.return (Empty_ok (pos_of_state s, s, No_error))
 
   let register_nl lines chars_after_nl s =
     let s1 = {
@@ -716,106 +751,130 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
         line = s.line + lines;
         line_begin = s.index - chars_after_nl; }
     in
-    Empty_ok ((), s1, No_error)
+    Ch.Monad.return (Empty_ok ((), s1, No_error))
 
 
   (* Character parsers
      ------------------------------------------------------------------------ *)
 
   let skip n s =
+    let open Ch.Monad in
     if n >= 0 then
       let s1 = advance_state s n in
-        if s1.index <> s.index then
-          Consumed_ok ((), s1, No_error)
-        else
-          Empty_ok ((), s, No_error)
+      if s1.index <> s.index then
+        return (Consumed_ok ((), s1, No_error))
+      else
+        return (Empty_ok ((), s, No_error))
     else
       invalid_arg "MParser.skip: negative offset"
 
   let eof s =
-    match read_char s with
+    let open Ch.Monad in
+    read_char s >>= function
       | Some c ->
-          Empty_failed (expected_error s "end of input")
+          return (Empty_failed (expected_error s "end of input"))
       | None ->
-          Empty_ok ((), s, No_error)
+          return (Empty_ok ((), s, No_error))
 
   let char c s =
-    if match_char s c then
-      Consumed_ok (c, next_state s, No_error)
-    else
-      Empty_failed (expected_error s ("'" ^ (String.make 1 c) ^ "'"))
+    let open Ch.Monad in
+    match_char s c >>= function
+      | true ->
+          return (Consumed_ok (c, next_state s, No_error))
+      | false ->
+          let err = expected_error s ("'" ^ (String.make 1 c) ^ "'") in
+          return (Empty_failed err)
 
   let skip_char c s =
-    if match_char s c then
-      Consumed_ok ((), next_state s, No_error)
-    else
-      Empty_failed (expected_error s ("'" ^ (String.make 1 c) ^ "'"))
+    let open Ch.Monad in
+    match_char s c >>= function
+      | true ->
+          return (Consumed_ok ((), next_state s, No_error))
+      | false ->
+          let err = expected_error s ("'" ^ (String.make 1 c) ^ "'") in
+          return (Empty_failed err)
 
   let any_char s =
-    match read_char s with
+    let open Ch.Monad in
+    read_char s >>= function
       | Some c ->
-          Consumed_ok (c, next_state s, No_error)
+          return (Consumed_ok (c, next_state s, No_error))
       | None ->
-          Empty_failed (expected_error s "any character")
+          return (Empty_failed (expected_error s "any character"))
 
   let skip_any_char s =
-    match read_char s with
+    let open Ch.Monad in
+    read_char s >>= function
       | Some c ->
-          Consumed_ok ((), next_state s, No_error)
+          return (Consumed_ok ((), next_state s, No_error))
       | None ->
-          Empty_failed (expected_error s "any character")
+          return (Empty_failed (expected_error s "any character"))
 
   let any_char_or_nl s =
-    match read_char s with
+    let open Ch.Monad in
+    read_char s >>= function
       | Some c ->
           if c <> '\n' && c <> '\r' then
-            Consumed_ok (c, next_state s, No_error)
+            return (Consumed_ok (c, next_state s, No_error))
           else
-            let n = (if c = '\r' && next_char s = Some '\n' then 2 else 1) in
-            Consumed_ok ('\n', advance_state_nl s n, No_error)
+            next_char s >>= fun next ->
+            let n = if c = '\r' && next = Some '\n' then 2 else 1 in
+            return (Consumed_ok ('\n', advance_state_nl s n, No_error))
       | None ->
-          Empty_failed (expected_error s "any character")
+          return (Empty_failed (expected_error s "any character"))
 
   let skip_any_char_or_nl s =
-    match read_char s with
+    let open Ch.Monad in
+    read_char s >>= function
       | Some c ->
           if c <> '\n' && c <> '\r' then
-            Consumed_ok ((), next_state s, No_error)
+            return (Consumed_ok ((), next_state s, No_error))
           else
-            let n = if c = '\r' && next_char s = Some '\n' then 2 else 1 in
-            Consumed_ok ((), advance_state_nl s n, No_error)
+            next_char s >>= fun next ->
+            let n = if c = '\r' && next = Some '\n' then 2 else 1 in
+            return (Consumed_ok ((), advance_state_nl s n, No_error))
       | None ->
-          Empty_failed (expected_error s "any character")
+          return (Empty_failed (expected_error s "any character"))
 
   let peek_char s =
-    match next_char s with
+    let open Ch.Monad in
+    next_char s >>= function
       | Some c ->
-          Empty_ok (c, s, No_error)
+          return (Empty_ok (c, s, No_error))
       | None ->
-          Empty_failed (unexpected_error s "end of input")
+          return (Empty_failed (unexpected_error s "end of input"))
 
   let string str s =
-    if match_string s str then
-      Consumed_ok (str, advance_state s (String.length str), No_error)
-    else
-      Empty_failed (expected_error s ("\"" ^ str ^ "\""))
+    let open Ch.Monad in
+    match_string s str >>= function
+      | true ->
+          let s = advance_state s (String.length str) in
+          return (Consumed_ok (str, s, No_error))
+      | false ->
+          return (Empty_failed (expected_error s ("\"" ^ str ^ "\"")))
 
   let skip_string str s =
-    if match_string s str then
-      Consumed_ok ((), advance_state s (String.length str), No_error)
-    else
-      Empty_failed (expected_error s ("\"" ^ str ^ "\""))
+    let open Ch.Monad in
+    match_string s str >>= function
+      | true ->
+          let s = advance_state s (String.length str) in
+          return (Consumed_ok ((), s, No_error))
+      | false ->
+          return (Empty_failed (expected_error s ("\"" ^ str ^ "\"")))
 
   let any_string n s =
+    let open Ch.Monad in
     if n = 0 then
-      Empty_ok ("", s, No_error)
+      return (Empty_ok ("", s, No_error))
     else
-      let r = read_string s n in
+      read_string s n >>= fun r ->
       if String.length r = n then
-        Consumed_ok (r, advance_state s n, No_error)
+        return (Consumed_ok (r, advance_state s n, No_error))
       else
-        Empty_failed
-          (expected_error s (sprintf "any sequence of %d characters" n))
+        let msg =
+          expected_error s (sprintf "any sequence of %d characters" n)
+        in
+        return (Empty_failed msg)
 
   let many_chars p s =
     many_fold_apply
@@ -840,21 +899,23 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
     skip_many_chars (not_followed_by q "" >> p) << q
 
   let satisfy p s =
-    match read_char s with
+    let open Ch.Monad in
+    read_char s >>= function
       | Some c ->
           if p c then
-            Consumed_ok (c, next_state s, No_error)
+            return (Consumed_ok (c, next_state s, No_error))
           else
-            Empty_failed (unknown_error s)
+            return (Empty_failed (unknown_error s))
       | None ->
-          Empty_failed (unexpected_error s "end of input")
+          return (Empty_failed (unexpected_error s "end of input"))
 
   let satisfy_l p label s =
-    match read_char s with
+    let open Ch.Monad in
+    read_char s >>= function
       | Some c when p c ->
-          Consumed_ok (c, next_state s, No_error)
+          return (Consumed_ok (c, next_state s, No_error))
       | _ ->
-          Empty_failed (expected_error s label)
+          return (Empty_failed (expected_error s label))
 
   let skip_satisfy p =
     satisfy p |>> ignore
@@ -863,66 +924,75 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
     satisfy_l p label |>> ignore
 
   let nsatisfy n p s =
+    let open Ch.Monad in
     if n = 0 then
-      Empty_ok ("", s, No_error)
+      return (Empty_ok ("", s, No_error))
     else
-      let r = read_string s n in
-        if String.length r = n && String.for_all p r then
-          Consumed_ok (r, advance_state s n, No_error)
-        else
-          Empty_failed (unknown_error s)
+      read_string s n >>= fun r ->
+      if String.length r = n && String.for_all p r then
+        return (Consumed_ok (r, advance_state s n, No_error))
+      else
+        return (Empty_failed (unknown_error s))
 
   let many_satisfy_loop p =
+    let open Ch.Monad in
     let rec loop i s =
-      match read_index s i with
+      read_index s i >>= function
         | Some c when p c ->
             loop (i + 1) s
         | _ ->
-            i - s.index
+            return (i - s.index)
     in
     fun s -> loop s.index s
 
   let many_satisfy p s =
-    let n = many_satisfy_loop p s in
+    let open Ch.Monad in
+    many_satisfy_loop p s >>= fun n ->
     if n > 0 then
-      Consumed_ok (read_string s n, advance_state s n, No_error)
+      read_string s n >>= fun r ->
+      return (Consumed_ok (r, advance_state s n, No_error))
     else
-      Empty_ok ("", s, No_error)
+      return (Empty_ok ("", s, No_error))
 
   let many1_satisfy p s =
-    match many_satisfy p s with
+    let open Ch.Monad in
+    many_satisfy p s >>= function
       | Consumed_ok _ as result ->
-          result
+          return result
       | _ ->
-          Empty_failed (unknown_error s)
+          return (Empty_failed (unknown_error s))
 
   let skip_many_satisfy p s =
-    let n = many_satisfy_loop p s in
+    let open Ch.Monad in
+    many_satisfy_loop p s >>= fun n ->
     if n > 0 then
-      Consumed_ok ((), advance_state s n, No_error)
+      return (Consumed_ok ((), advance_state s n, No_error))
     else
-      Empty_ok ((), s, No_error)
+      return (Empty_ok ((), s, No_error))
 
   let skip_many1_satisfy p s =
-    match skip_many_satisfy p s with
+    let open Ch.Monad in
+    skip_many_satisfy p s >>= function
       | Consumed_ok _ as result ->
-          result
+          return result
       | _ ->
-          Empty_failed (unknown_error s)
+          return (Empty_failed (unknown_error s))
 
   let next_char_satisfies p s =
-    match next_char s with
+    let open Ch.Monad in
+    next_char s >>= function
       | Some c when p c ->
-          Empty_ok ((), s, No_error)
+          return (Empty_ok ((), s, No_error))
       | _ ->
-          Empty_failed (unknown_error s)
+          return (Empty_failed (unknown_error s))
 
   let prev_char_satisfies p s =
-    match prev_char s with
+    let open Ch.Monad in
+    prev_char s >>= function
       | Some c when p c ->
-          Empty_ok ((), s, No_error)
+          return (Empty_ok ((), s, No_error))
       | _ ->
-          Empty_failed (unknown_error s)
+          return (Empty_failed (unknown_error s))
 
   let any_of str =
     satisfy (String.contains str)
@@ -958,60 +1028,64 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
     satisfy_l Char.is_blank "space or tab" s
 
   let newline s =
-    match read_char s with
+    let open Ch.Monad in
+    read_char s >>= function
       | Some c when c = '\n' || c = '\r' ->
-          let k = if c = '\r' && next_char s = Some '\n' then 2 else 1 in
-          Consumed_ok ('\n', advance_state_nl s k, No_error)
+          next_char s >>= fun next ->
+          let k = if c = '\r' && next = Some '\n' then 2 else 1 in
+          return (Consumed_ok ('\n', advance_state_nl s k, No_error))
       | _ ->
-          Empty_failed (expected_error s "newline")
+          return (Empty_failed (expected_error s "newline"))
 
   let space s =
-    match read_char s with
+    let open Ch.Monad in
+    read_char s >>= function
       | Some c when c = ' ' || c = '\t' ->
-          Consumed_ok (c, next_state s, No_error)
+          return (Consumed_ok (c, next_state s, No_error))
       | Some c when c = '\n' || c = '\r' ->
-          let k = if c = '\r' && next_char s = Some '\n' then 2 else 1 in
-          Consumed_ok ('\n', advance_state_nl s k, No_error)
+          next_char s >>= fun next ->
+          let k = if c = '\r' && next = Some '\n' then 2 else 1 in
+          return (Consumed_ok ('\n', advance_state_nl s k, No_error))
       | _ ->
-          Empty_failed (expected_error s "whitespace")
+          return (Empty_failed (expected_error s "whitespace"))
 
-  let spaces s =
-    let lines = ref 0 in
-    let line_begin = ref 0 in
-    let rec loop i =
-      match read_index s i with
+  let spaces s : (unit, 's) reply Ch.Monad.t =
+    let open Ch.Monad in
+
+    let rec loop lines line_begin i =
+      read_index s i >>= function
         | Some c when c = ' ' || c = '\t' ->
-            loop (i + 1)
+            loop lines line_begin (i + 1)
         | Some c when c = '\n' || c = '\r' ->
-            let k =
-              if c = '\r' && read_index s (i + 1) = Some '\n' then 2 else 1
-            in
-            lines := !lines + 1;
-            line_begin := i + k;
-            loop (i + k)
+            read_index s (i + 1) >>= fun next ->
+            let k = if c = '\r' && next = Some '\n' then 2 else 1 in
+            loop (lines + 1) (i + k) (i + k)
         | _ ->
-            i - s.index
+            return (lines, line_begin, i - s.index)
     in
-    let n = loop s.index in
-    if !lines > 0 then
+
+    loop 0 0 s.index >>= fun (lines, line_begin, n) ->
+    if lines > 0 then
       let s1 =
         { s with
-            index      = s.index + n;
-            line       = s.line + !lines;
-            line_begin = !line_begin; }
+            index = s.index + n;
+            line = s.line + lines;
+            line_begin = line_begin;
+        }
       in
-      Consumed_ok ((), s1, No_error)
+      return (Consumed_ok ((), s1, No_error))
     else if n > 0 then
-      Consumed_ok ((), advance_state s n, No_error)
+      return (Consumed_ok ((), advance_state s n, No_error))
     else
-      Empty_ok ((), s, No_error)
+      return (Empty_ok ((), s, No_error))
 
   let spaces1 s =
-    match spaces s with
+    let open Ch.Monad in
+    spaces s >>= function
       | Consumed_ok _ as result ->
-          result
+          return result
       | _ ->
-          Empty_failed (expected_error s "whitespace")
+          return (Empty_failed (expected_error s "whitespace"))
 
 
   (* Expressions
@@ -1103,29 +1177,31 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
     Rx.make pat
 
   let regexp r s =
-    match match_regexp s r with
+    let open Ch.Monad in
+    match_regexp s r >>= function
       | Some substrings ->
           (match Rx.get_substring substrings 0 with
             | Some result ->
                 let n = String.length result in
                 if n > 0 then
-                  Consumed_ok (result, advance_state s n, No_error)
+                  return (Consumed_ok (result, advance_state s n, No_error))
                 else
-                  Empty_ok (result, s, No_error)
+                  return (Empty_ok (result, s, No_error))
             | None ->
                 zero s)
       | None ->
           zero s
 
   let regexp_substrings r s =
-    match match_regexp s r with
+    let open Ch.Monad in
+    match_regexp s r >>= function
       | Some substrings ->
           let result = Rx.get_all_substrings substrings in
           let n = String.length (Array.get result 0) in
           if n > 0 then
-            Consumed_ok (result, advance_state s n, No_error)
+            return (Consumed_ok (result, advance_state s n, No_error))
           else
-            Empty_ok (result, s, No_error)
+            return (Empty_ok (result, s, No_error))
       | None ->
           zero s
 
@@ -1193,12 +1269,12 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
       sep_by1 p comma
 
     let escaped_char s =
-      s |> (any_of "nrtb\\\"\'" |>> function
-        | 'n' -> '\n'
-        | 'r' -> '\r'
-        | 't' -> '\t'
-        | 'b' -> '\b'
-        | c   -> c)
+      s |> (any_of "nrtb\\\"\'" >>= function
+        | 'n' -> return '\n'
+        | 'r' -> return '\r'
+        | 't' -> return '\t'
+        | 'b' -> return '\b'
+        | c   -> return c)
 
     let escape_sequence_dec =
       let int_of_dec c = (Char.code c) - (Char.code '0') in
@@ -1241,7 +1317,7 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
 
     let char_token s =
          ((char '\\' >> (escaped_char <|> escape_sequence))
-      <|>  any_char) s
+      <|> any_char) s
 
     let char_literal s =
       (char '\'' >> char_token << char_sp '\''

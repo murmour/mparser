@@ -45,7 +45,7 @@ module Make: functor (Ch: MParser_Sig.Channel) ->
 
   val from_channel:
     ?block_size:int -> ?block_overlap:int -> ?min_rspace:int ->
-    Ch.t -> t
+    Ch.t -> t Ch.Monad.t
   (** [from_channel ?block_size ?block_overlap ?min_rspace chn] creates a
       character stream that contains the characters of the input channel [chn].
       The behavior of the stream is undefined if the channel is modified
@@ -78,32 +78,32 @@ module Make: functor (Ch: MParser_Sig.Channel) ->
   val length: t -> int
   (** [length s] returns the number of characters in the stream [s]. *)
 
-  val seek: t -> int -> unit
+  val seek: t -> int -> unit Ch.Monad.t
   (** [seek s pos] prepares the stream for reading from position [pos]. If
       [pos] is outside the block currently held in memory, a block containing
       [pos] is read, replacing the old block.
 
       @raise Invalid_argument if [pos] is not a valid stream position. *)
 
-  val read_char: t -> int -> char option
+  val read_char: t -> int -> char option Ch.Monad.t
   (** [read_char s pos] returns [Some c] if [c] is the character at position
       [pos] in [s], or [None] if this position is not a valid position in
       [s]. *)
 
-  val read_string: t -> int -> int -> string
+  val read_string: t -> int -> int -> string Ch.Monad.t
   (** [read_string s pos maxlen] returns a string containing the next [n]
       characters in [s], where [n] is the minimum of [maxlen] and the number of
       characters remaining from position [pos]. If [pos] is not a valid
       position in [s], the empty string is returned. *)
 
-  val match_char: t -> int -> char -> bool
+  val match_char: t -> int -> char -> bool Ch.Monad.t
   (** [match_char s pos c] is equivalent to [read_char s pos = Some c]. *)
 
-  val match_string: t -> int -> string -> bool
+  val match_string: t -> int -> string -> bool Ch.Monad.t
   (** [match_string s pos str] is equivalent to [read_string s pos
       (String.length str) = str]. *)
 
-  val match_regexp: t -> int -> Rx.t -> Rx.substrings option
+  val match_regexp: t -> int -> Rx.t -> Rx.substrings option Ch.Monad.t
   (** [match_regexp s pos rex] matches the regular expression [rex] against the
       characters in [s] starting at position [pos]. It returns [Some
       substrings] if the match succeeds, where [substrings] contains the matched

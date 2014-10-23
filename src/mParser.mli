@@ -98,33 +98,33 @@ module Make: functor (Ch: MParser_Sig.Channel) ->
       position of [s] is a valid position.  Otherwise, the same state is
       returned..  *)
 
-  val read_char: 's state -> char option
+  val read_char: 's state -> char option Ch.Monad.t
   (** [read_char s] returns [Some c] where [c] is the character at the current
       position, or [None] if this position is not a valid position. *)
 
-  val read_index: 's state -> int -> char option
+  val read_index: 's state -> int -> char option Ch.Monad.t
   (** [read_char s] returns [Some c] where [c] is the character at the current
       position, or [None] if this position is not a valid position. *)
 
-  val next_char: 's state -> char option
+  val next_char: 's state -> char option Ch.Monad.t
   (** [next_char s] returns [Some c] where [c] is the character after the
       current position, or [None] if this position is not a valid position. *)
 
-  val prev_char: 's state -> char option
+  val prev_char: 's state -> char option Ch.Monad.t
   (** [prev_char s] returns [Some c] where [c] is the character before the
       current position, or [None] if this position is not a valid position. *)
 
-  val read_string: 's state -> int -> string
+  val read_string: 's state -> int -> string Ch.Monad.t
   (** [read_string s maxlen] returns a string containing the next [n]
       characters, where [n] is the minimum of [maxlen] and the number of
       characters remaining from the current position.  If the current position
       is not a valid position, the empty string is returned. *)
 
-  val match_char: 's state -> char -> bool
+  val match_char: 's state -> char -> bool Ch.Monad.t
   (** [match_char s c] returns [true] if [c] ist the char at the current
       position, and [false] otherwise. *)
 
-  val match_string: 's state -> string -> bool
+  val match_string: 's state -> string -> bool Ch.Monad.t
   (** [match_string s str] returns [true] if the input starting at the current
       position matches the string [str], and [false] otherwise. *)
 
@@ -232,7 +232,7 @@ module Make: functor (Ch: MParser_Sig.Channel) ->
       (** The parser succeeded after consuming input. *)
   (** The type of replies returned by parsers. *)
 
-  type ('a, 's) parser = 's state -> ('a, 's) reply
+  type ('a, 's) parser = 's state -> ('a, 's) reply Ch.Monad.t
   (** The type of parsers with result type ['a] and user state type ['s]. *)
 
   type ('a, 's) t = ('a, 's) parser
@@ -274,15 +274,15 @@ module Make: functor (Ch: MParser_Sig.Channel) ->
     | Success of 'a
     | Failed of string * error
 
-  val parse: ('a, 's) parser -> Stream.t -> 's -> 'a result
+  val parse: ('a, 's) parser -> Stream.t -> 's -> 'a result Ch.Monad.t
   (** [parse p input user] runs the parser [p] on the input [input] using the
       initial user state [user]. *)
 
-  val parse_string: ('a, 's) parser -> string -> 's -> 'a result
+  val parse_string: ('a, 's) parser -> string -> 's -> 'a result Ch.Monad.t
   (** [parse_string p str user] runs the parser [p] on the string [str] using
       the initial user state [user]. *)
 
-  val parse_channel: ('a, 's) parser -> Ch.t -> 's -> 'a result
+  val parse_channel: ('a, 's) parser -> Ch.t -> 's -> 'a result Ch.Monad.t
   (** [parse_string p chn user] runs the parser [p] on the input channel [chn]
       using the initial user state [user]. *)
 
@@ -803,7 +803,7 @@ module Make: functor (Ch: MParser_Sig.Channel) ->
 
   (** {2 Regexp-related features} *)
 
-  val match_regexp: 's state -> Rx.t -> Rx.substrings option
+  val match_regexp: 's state -> Rx.t -> Rx.substrings option Ch.Monad.t
   (** [match_regexp s rex] matches the regular expression [rex] against the
       input.  It returns [Some substrings] if the match succeeds, where
       [substrings] contains the matched substrings.  If the match fails or if

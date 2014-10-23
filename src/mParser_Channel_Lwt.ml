@@ -21,22 +21,29 @@
 *)
 
 
-(* todo *)
-type t = in_channel (* Lwt_io.input Lwt_io.channel *)
+open Lwt
 
 
-(* todo *)
+module Monad = MParser_Monad.Extend (struct
+  type 'a t = 'a Lwt.t
+  let return = Lwt.return
+  let bind = Lwt.bind
+end)
+
+
+type t = Lwt_io.input Lwt_io.channel
+
+
 let length ch =
-  Pervasives.in_channel_length ch
+  Lwt_io.length ch >>= fun len ->
+  Lwt.return (Int64.to_int len)
 
-(* todo *)
 let position ch =
-  Pervasives.pos_in ch
+  let pos = Lwt_io.position ch in
+  Lwt.return (Int64.to_int pos)
 
-(* todo *)
 let set_position ch pos =
-  Pervasives.seek_in ch pos
+  Lwt_io.set_position ch (Int64.of_int pos)
 
-(* todo *)
 let read ch buf pos len =
-  Pervasives.input ch buf pos len
+  Lwt_io.read_into ch buf pos len

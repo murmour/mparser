@@ -52,11 +52,12 @@ end
 
 (* The interface of a pluggable channel data structure. *)
 module type Channel = sig
+  module Monad: MParser_Monad.Complete
 
   type t
   (** Channel type *)
 
-  val length: t -> int
+  val length: t -> int Monad.t
   (** Return the size (number of characters) of the regular file
       on which the given channel is opened.  If the channel is opened
       on a file that is not a regular file, the result is meaningless.
@@ -64,13 +65,13 @@ module type Channel = sig
       translations that can be performed when reading from a channel
       opened in text mode. *)
 
-  val position: t -> int
+  val position: t -> int Monad.t
   (** Return the current reading position for the given channel. *)
 
-  val set_position: t -> int -> unit
+  val set_position: t -> int -> unit Monad.t
   (** Return the current reading position for the given channel. *)
 
-  val read: t -> string -> int -> int -> int
+  val read: t -> string -> int -> int -> int Monad.t
   (** [input ic buf pos len] reads up to [len] characters from
       the given channel [ic], storing them in string [buf], starting at
       character number [pos].

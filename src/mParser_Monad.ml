@@ -16,29 +16,44 @@
      See the GNU Library General Public License version 2.1 for more details
      (enclosed in the file LICENSE.txt).
 
-   Module MParser_Channel_Pervasives:
-     A channel abstraction built on top of Pervasives.in_channel.
+   Module MParser_Monad:
+     Monadic interfaces.
 *)
 
 
-module Monad = MParser_Monad.Extend (struct
-  type 'a t = 'a
-  let return x = x
-  let bind v f = f v
-end)
+module type Minimal = sig
+  type 'a t
+  val return: 'a -> 'a t
+  val bind: 'a t -> ('a -> 'b t) -> 'b t
+end
 
 
-type t = Pervasives.in_channel
+module type Complete = sig
+  include Minimal
+  val (>>=): 'a t -> ('a -> 'b t) -> 'b t
+  val (>>): 'a t -> 'b t -> 'b t
+  val (<<): 'a t -> 'b t -> 'a t
+  val iter_s: ('a -> unit t) -> 'a list -> unit t
+end
 
 
-let length ch =
-  Pervasives.in_channel_length ch
+module Extend (M: Minimal) = struct
+  include M
 
-let position ch =
-  Pervasives.pos_in ch
+  let (>>=) = bind
 
-let set_position ch pos =
-  Pervasives.seek_in ch pos
+  let (>>) p q =
+    p >>= fun _ -> q
 
-let read ch buf pos len =
-  Pervasives.input ch buf pos len
+  let (<<) p q =
+    p >>= fun x -> q >> return x
+
+  let rec iter_s f l =
+    match l with
+      | [] ->
+          return ()
+      | x :: l ->
+          f x >>= fun () ->
+          iter_s f l
+
+end
