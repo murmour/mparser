@@ -16,7 +16,7 @@
      See the GNU Library General Public License version 2.1 for more details
      (enclosed in the file LICENSE.txt).
 
-   Module CharStream:
+   Module MParser_CharStream:
      Character streams.
 *)
 
@@ -50,7 +50,7 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
       substring of [buffer]. *)
   let io_input chn buffer pos length : int Ch.Monad.t =
     if pos < 0 || pos + length > String.length buffer then
-      invalid_arg "io_input: invalid substring"
+      invalid_arg "MParser_CharStream.io_input: invalid substring"
     else
       let rec iter ~stop ~chars_read =
         if stop then return chars_read else
@@ -80,7 +80,7 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
   let read_block s pos length : unit Ch.Monad.t =
     io_input s.input s.buffer pos length >>= fun block_length ->
     if block_length <> length then
-      failwith "CharStream.read_block: I/O error"
+      failwith "MParser_CharStream.read_block: I/O error"
     else
       return ()
 
@@ -109,13 +109,13 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
         | None -> block_size / 64 in
 
     if block_size < 1 || block_size > Sys.max_string_length then
-      invalid_arg "CharStream.from_channel: invalid block size";
+      invalid_arg "MParser_CharStream.from_channel: invalid block size";
 
     if block_overlap < 1 || block_overlap > block_size / 2 then
-      invalid_arg "CharStream.from_channel: invalid block overlap";
+      invalid_arg "MParser_CharStream.from_channel: invalid block overlap";
 
     if min_rspace < 1 || min_rspace > block_overlap then
-      invalid_arg "CharStream.from_channel: invalid minimum rspace";
+      invalid_arg "MParser_CharStream.from_channel: invalid minimum rspace";
 
     Ch.length input >>= fun length ->
     Ch.length input >>= fun buffer_pos ->
@@ -191,7 +191,7 @@ module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
     if is_valid_pos s pos then
       unsafe_seek s pos
     else
-      invalid_arg "CharStream.seek: invalid stream position"
+      invalid_arg "MParser_CharStream.seek: invalid stream position"
 
   let chars_left s pos =
     if is_valid_pos s pos then

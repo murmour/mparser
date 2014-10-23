@@ -43,9 +43,9 @@ Flag lwt
 
 Library mparser
   Path            : src
-  Modules         : MParser, MParser_Sig, CharStream,
-                    MParser_Regexp_Dummy, MParser_Channel_Pervasives
-  InternalModules : MParser_Utils
+  Modules         : MParser, MParser_Sig, MParser_CharStream, MParser_Utils,
+                    MParser_Monad, MParser_Regexp_Dummy,
+                    MParser_Channel_Pervasives
   FindlibName     : mparser
 
 Library mparser_pcre

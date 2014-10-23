@@ -41,7 +41,7 @@ open MParser_Utils
 
 
 module Make (Ch: MParser_Sig.Channel) (Rx: MParser_Sig.Regexp) = struct
-  module Stream = CharStream.Make (Ch) (Rx)
+  module Stream = MParser_CharStream.Make (Ch) (Rx)
 
   (* Parser state
      ------------------------------------------------------------------------ *)

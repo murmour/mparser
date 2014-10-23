@@ -26,8 +26,8 @@
     efficient and produce good error messages due to a controlled use of
     backtracking.  The performance of the resulting parsers should be
     sufficient for most applications.  The parsers get their input from
-    character streams provided by the {!CharStream} module, which means that
-    it is possible to parse files up to a size of at least 1GB.
+    character streams provided by the {!MParser_CharStream} module, which
+    means that it is possible to parse files up to a size of at least 1GB.
 
     The [MParser] module is an OCaml version of the
     {{:http://www.quanttec.com/fparsec}FParsec} library for F# by Stephan
@@ -64,7 +64,7 @@
 
 module Make: functor (Ch: MParser_Sig.Channel) ->
              functor (Rx: MParser_Sig.Regexp) -> sig
-  module Stream: module type of CharStream.Make (Ch) (Rx)
+  module Stream: module type of MParser_CharStream.Make (Ch) (Rx)
 
   type 's state
   (** The type of parser states. *)
@@ -814,7 +814,7 @@ module Make: functor (Ch: MParser_Sig.Channel) ->
       against the complete remaining substring.  The minimum number of
       characters that are guaranteed to be used for matching is specified when
       creating the input character stream. See the documentation of the
-      {!CharStream} module for more information. *)
+      {!MParser_CharStream} module for more information. *)
 
   val make_regexp: string -> Rx.t
   (** Creates a regular expression from a string. *)
@@ -827,7 +827,7 @@ module Make: functor (Ch: MParser_Sig.Channel) ->
       against the complete remaining substring.  The minimum number of
       characters that are guaranteed to be used for matching is specified when
       creating the input character stream.  See the documentation of the
-      {!CharStream} module for more information. *)
+      {!MParser_CharStream} module for more information. *)
 
   val regexp_substrings: Rx.t -> (string array, 's) parser
   (** [regexp_substrings rex] parses any string matching the regular expression
@@ -837,7 +837,7 @@ module Make: functor (Ch: MParser_Sig.Channel) ->
       against the complete remaining substring.  The minimum number of
       characters that are guaranteed to be used for matching is specified when
       creating the input character stream.  See the documentation of the
-      {!CharStream} module for more information. *)
+      {!MParser_CharStream} module for more information. *)
 
   (** Predefined tokens parsers.
 
