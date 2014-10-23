@@ -32,76 +32,76 @@
 *)
 
 
-type t
-(** The type of character streams. *)
+module Make: functor (Ch: MParser_Sig.Channel) ->
+             functor (Rx: MParser_Sig.Regexp) -> sig
 
-val from_string: string -> t
-(** [from_string s] creates a character stream that contains the characters of
-    the string [s]. The string is not copied, hence subsequent modifications
-    to it are visible from the stream. *)
+  type t
+  (** The type of character streams. *)
 
-val from_channel: ?block_size:int -> ?block_overlap:int -> ?min_rspace:int -> in_channel -> t
-(** [from_channel ?block_size ?block_overlap ?min_rspace chn] creates a
-    character stream that contains the characters of the input channel [chn].
-    The behavior of the stream is undefined if the channel is modified
-    subsequently.
+  val from_string: string -> t
+  (** [from_string s] creates a character stream that contains the characters of
+      the string [s]. The string is not copied, hence subsequent modifications
+      to it are visible from the stream. *)
 
-    When a character stream is created from an input channel, the characters
-    in this channel are read in overlapping blocks, where [block_size] and
-    [block_overlap] determine the size of a block and the amount of overlap.
-    If the length of the channel is not greater than the block size, the whole
-    channel is read at once. Otherwise, only a single block of the channel is
-    kept in memory at a time. Whenever the current stream position leaves the
-    part that is currently kept in memory, a new block is read from the
-    channel. The channel must support seeking (i.e., must be created from a
-    regular file) to enable this. If possible, blocks are read with the
-    specified amount of overlap to minimize the re-reading of blocks due to
-    backtracking. [min_rspace] specifies the minimum number of characters a
-    regular expression is matched against (if possible) by [match_regexp].
+  val from_channel:
+    ?block_size:int -> ?block_overlap:int -> ?min_rspace:int ->
+    Ch.t -> t
+  (** [from_channel ?block_size ?block_overlap ?min_rspace chn] creates a
+      character stream that contains the characters of the input channel [chn].
+      The behavior of the stream is undefined if the channel is modified
+      subsequently.
 
-    @param block_size default: [1048576] characters, valid range: [1 <=
-    block_size <= Sys.max_string_length].
+      When a character stream is created from an input channel, the characters
+      in this channel are read in overlapping blocks, where [block_size] and
+      [block_overlap] determine the size of a block and the amount of overlap.
+      If the length of the channel is not greater than the block size, the whole
+      channel is read at once. Otherwise, only a single block of the channel is
+      kept in memory at a time. Whenever the current stream position leaves the
+      part that is currently kept in memory, a new block is read from the
+      channel. The channel must support seeking (i.e., must be created from a
+      regular file) to enable this. If possible, blocks are read with the
+      specified amount of overlap to minimize the re-reading of blocks due to
+      backtracking. [min_rspace] specifies the minimum number of characters a
+      regular expression is matched against (if possible) by [match_regexp].
 
-    @param block_overlap default: [block_size / 16], valid range: [1 <=
-    block_overlap <= block_size / 2].
+      @param block_size default: [1048576] characters, valid range: [1 <=
+      block_size <= Sys.max_string_length].
 
-    @param min_rspace default: [block_size / 64], valid range: [1 <=
-    min_rspace <= block_overlap].
+      @param block_overlap default: [block_size / 16], valid range: [1 <=
+      block_overlap <= block_size / 2].
 
-    @raise Invalid_argument if the arguments are invalid. *)
+      @param min_rspace default: [block_size / 64], valid range: [1 <=
+      min_rspace <= block_overlap].
 
-val length: t -> int
-(** [length s] returns the number of characters in the stream [s]. *)
+      @raise Invalid_argument if the arguments are invalid. *)
 
-val seek: t -> int -> unit
-(** [seek s pos] prepares the stream for reading from position [pos]. If
-    [pos] is outside the block currently held in memory, a block containing
-    [pos] is read, replacing the old block.
+  val length: t -> int
+  (** [length s] returns the number of characters in the stream [s]. *)
 
-    @raise Invalid_argument if [pos] is not a valid stream position. *)
+  val seek: t -> int -> unit
+  (** [seek s pos] prepares the stream for reading from position [pos]. If
+      [pos] is outside the block currently held in memory, a block containing
+      [pos] is read, replacing the old block.
 
-val read_char: t -> int -> char option
-(** [read_char s pos] returns [Some c] if [c] is the character at position
-    [pos] in [s], or [None] if this position is not a valid position in
-    [s]. *)
+      @raise Invalid_argument if [pos] is not a valid stream position. *)
 
-val read_string: t -> int -> int -> string
-(** [read_string s pos maxlen] returns a string containing the next [n]
-    characters in [s], where [n] is the minimum of [maxlen] and the number of
-    characters remaining from position [pos]. If [pos] is not a valid
-    position in [s], the empty string is returned. *)
+  val read_char: t -> int -> char option
+  (** [read_char s pos] returns [Some c] if [c] is the character at position
+      [pos] in [s], or [None] if this position is not a valid position in
+      [s]. *)
 
-val match_char: t -> int -> char -> bool
-(** [match_char s pos c] is equivalent to [read_char s pos = Some c]. *)
+  val read_string: t -> int -> int -> string
+  (** [read_string s pos maxlen] returns a string containing the next [n]
+      characters in [s], where [n] is the minimum of [maxlen] and the number of
+      characters remaining from position [pos]. If [pos] is not a valid
+      position in [s], the empty string is returned. *)
 
-val match_string: t -> int -> string -> bool
-(** [match_string s pos str] is equivalent to [read_string s pos
-    (String.length str) = str]. *)
+  val match_char: t -> int -> char -> bool
+  (** [match_char s pos c] is equivalent to [read_char s pos = Some c]. *)
 
-
-(** {2 Regexp-related features} *)
-
-module MakeRx: functor (Rx: MParser_Regexp.Sig) -> sig
+  val match_string: t -> int -> string -> bool
+  (** [match_string s pos str] is equivalent to [read_string s pos
+      (String.length str) = str]. *)
 
   val match_regexp: t -> int -> Rx.t -> Rx.substrings option
   (** [match_regexp s pos rex] matches the regular expression [rex] against the

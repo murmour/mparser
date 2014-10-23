@@ -16,38 +16,9 @@
      See the GNU Library General Public License version 2.1 for more details
      (enclosed in the file LICENSE.txt).
 
-   Module MParser_PCRE:
-     PCRE-based regular expression parsers.
+   Module MParser_Channel_Pervasives:
+     A channel abstraction built on top of Pervasives.in_channel.
 *)
 
 
-module Regexp = struct
-
-  type t = Pcre.regexp
-  type substrings = Pcre.substrings
-
-
-  let make pattern =
-    Pcre.regexp pattern
-
-  let get_substring s idx =
-    try
-      Some (Pcre.get_substring s idx)
-    with Not_found | Invalid_argument _ ->
-      None
-
-  let get_all_substrings s =
-    Pcre.get_substrings s
-
-  let default_flags =
-    Pcre.rflags [ `ANCHORED ]
-
-  let exec ~rex ~pos s =
-    try
-      Some (Pcre.exec ~pos ~iflags:default_flags ~rex s)
-    with Not_found ->
-      None
-
-end
-
-include MParser.MakeRx (Regexp)
+include MParser_Sig.Channel

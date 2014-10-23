@@ -25,23 +25,6 @@ val ( |> ): 'a -> ('a -> 'b) -> 'b
 (** Function application. [x |> f] is equivalent to [f x]. *)
 
 
-module IO: sig
-
-  val input: in_channel -> string -> int -> int -> int
-  (** [input chn buffer pos length] reads up to [length] characters from the
-      channel [chn] and stores them in the string [buffer], starting at position
-      [pos].  It returns the actual number of characters read.  A value less
-      than [length] is only returned if there are less than [length] characters
-      available from [chn] (the [input] function in the [Pervasives] module is
-      allowed to read less than [length] characters if it "finds it convenient
-      to do a partial read").
-
-      @raise Invalid_argument if [pos] and [length] do not specify a valid
-      substring of [buffer]. *)
-
-end
-
-
 module String: sig
   include module type of String
 

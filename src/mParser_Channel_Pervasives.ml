@@ -16,11 +16,22 @@
      See the GNU Library General Public License version 2.1 for more details
      (enclosed in the file LICENSE.txt).
 
-   Module MParser_PCRE:
-     PCRE-based regular expression parsers.
+   Module MParser_Channel_Pervasives:
+     A channel abstraction built on top of Pervasives.in_channel.
 *)
 
 
-module Regexp: MParser_Regexp.Sig
+type t = Pervasives.in_channel
 
-include module type of MParser.MakeRx (Regexp)
+
+let length ch =
+  Pervasives.in_channel_length ch
+
+let position ch =
+  Pervasives.pos_in ch
+
+let set_position ch pos =
+  Pervasives.seek_in ch pos
+
+let read ch buf pos len =
+  Pervasives.input ch buf pos len

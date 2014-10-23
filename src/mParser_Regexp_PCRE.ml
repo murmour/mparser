@@ -16,12 +16,32 @@
      See the GNU Library General Public License version 2.1 for more details
      (enclosed in the file LICENSE.txt).
 
-   Module MParser_RE:
-     RE-based regular expression parsers.
-     The used syntax is re.perl (the one most similar to PCRE).
+   Module MParser_Regexp_PCRE:
+     PCRE-based regular expression parsers.
 *)
 
 
-module Regexp: MParser_Regexp.Sig
+type t = Pcre.regexp
+type substrings = Pcre.substrings
 
-include module type of MParser.MakeRx (Regexp)
+
+let make pattern =
+  Pcre.regexp pattern
+
+let get_substring s idx =
+  try
+    Some (Pcre.get_substring s idx)
+  with Not_found | Invalid_argument _ ->
+    None
+
+let get_all_substrings s =
+  Pcre.get_substrings s
+
+let default_flags =
+  Pcre.rflags [ `ANCHORED ]
+
+let exec ~rex ~pos s =
+  try
+    Some (Pcre.exec ~pos ~iflags:default_flags ~rex s)
+  with Not_found ->
+    None

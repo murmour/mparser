@@ -33,13 +33,18 @@ Flag re
   Description: Support for RE-based regular expression parsers
   Default: false
 
+Flag lwt
+  Description: Support for the Lwt's buffered byte channels
+  Default: false
+
 
 # Libraries
 # ------------------------------------------------------------------------------
 
 Library mparser
   Path            : src
-  Modules         : MParser, MParser_Regexp, CharStream
+  Modules         : MParser, MParser_Sig, CharStream,
+                    MParser_Regexp_Dummy, MParser_Channel_Pervasives
   InternalModules : MParser_Utils
   FindlibName     : mparser
 
@@ -47,7 +52,7 @@ Library mparser_pcre
   Build          $: flag(pcre) || flag(all)
   Install        $: flag(pcre) || flag(all)
   Path            : src
-  Modules         : MParser_PCRE
+  Modules         : MParser_Regexp_PCRE
   FindlibParent   : mparser
   FindlibName     : pcre
   BuildDepends    : mparser, pcre
@@ -56,10 +61,19 @@ Library mparser_re
   Build          $: flag(re) || flag(all)
   Install        $: flag(re) || flag(all)
   Path            : src
-  Modules         : MParser_RE
+  Modules         : MParser_Regexp_RE
   FindlibParent   : mparser
   FindlibName     : re
   BuildDepends    : mparser, re.perl
+
+Library mparser_lwt
+  Build          $: flag(lwt) || flag(all)
+  Install        $: flag(lwt) || flag(all)
+  Path            : src
+  Modules         : MParser_Channel_Lwt
+  FindlibParent   : mparser
+  FindlibName     : lwt
+  BuildDepends    : mparser, lwt
 
 
 # Misc
