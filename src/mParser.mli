@@ -457,7 +457,7 @@ val chain_left: ('a, 's) parser -> ('a -> 'a -> 'a, 's) parser -> 'a -> ('a, 's)
     zero occurrences of [p], the value [x] is returned.*)
 
 val chain_left1: ('a, 's) parser -> ('a -> 'a -> 'a, 's) parser -> ('a, 's) parser
-(** [chain_left p op] parses one or more occurrences of [p], separated by
+(** [chain_left1 p op] parses one or more occurrences of [p], separated by
     [op].  It returns the value obtained by the left-associative application
     of the functions returned by [op] to the results of [p]. *)
 
