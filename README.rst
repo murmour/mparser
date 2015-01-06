@@ -8,7 +8,7 @@ and the FParsec library for FSharp by Stephan Tolksdorf.
 
 See the file LICENSE.txt for copying conditions.
 
-Home page: https://bitbucket.org/cakeplus/mparser
+Home page: https://github.org/cakeplus/mparser
 
 MParser used to be a part of ocaml-base, a collection of useful OCaml
 libraries by Holger Arnold [1]_.
@@ -25,13 +25,17 @@ In order to compile this package, you will need:
 * findlib [3]_.
 * optional dependency: pcre-ocaml [4]_ for mparser.pcre.
 * optional dependency: re [5]_ for mparser.re.
+* optional dependency: lwt [6]_ for mparser.lwt.
 
 
 Installing
 ----------
 
 1. Uncompress the source archive and go to the root of the package.
-2. Run ``ocaml setup.ml -configure``. Optional flags: ``--enable-pcre`` to enable support for pcre-ocaml, ``--enable-re`` to enable support for re.
+2. Run ``ocaml setup.ml -configure``. Optional flags:
+   1) ``--enable-pcre`` -- support for PCRE-based regular expressions (MParser_Regexp_PCRE).
+   2) ``--enable-re`` -- support for RE-based regular expressions (MParser_Regexp_RE).
+   3) ``--enable-lwt`` -- support for Lwt_io.channel (MParser_Channel_Lwt).
 3. Run ``ocaml setup.ml -build``.
 4. Run ``ocaml setup.ml -install``.
 
@@ -64,10 +68,16 @@ parsing, taking care of the operator precedence issues:
     Infix (p |>> (fun _ a b -> (`Binop (o, a, b))), Assoc_left)
 
   let operators =
-    [ [ infix (char '*') `Mul;
-        infix (char '/') `Div ];
-      [ infix (char '+') `Add;
-        infix (char '-') `Sub ] ]
+    [
+      [
+        infix (char '*') `Mul;
+        infix (char '/') `Div;
+      ];
+      [
+        infix (char '+') `Add;
+        infix (char '-') `Sub;
+      ];
+    ]
 
   let expr =
     expression operators (Tokens.decimal |>> fun i -> `Int i)
@@ -93,8 +103,10 @@ The evaluator function:
 
   let eval (s: string) : int =
     match MParser.parse_string expr s () with
-      | Success e -> calc e
-      | Failed (msg, e) -> failwith msg
+      | Success e ->
+          calc e
+      | Failed (msg, e) ->
+          failwith msg
 
 
 Using it:
@@ -115,3 +127,4 @@ References
 .. [3] http://projects.camlcity.org/projects/findlib.html
 .. [4] https://bitbucket.org/mmottl/pcre-ocaml
 .. [5] https://github.com/ocaml/ocaml-re
+.. [6] http://ocsigen.org/lwt/
