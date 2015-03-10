@@ -141,9 +141,14 @@ val match_string: 's state -> string -> bool
     internationalization of error messages and the automatic processing of
     parse errors. *)
 
-type pos = int * int * int
-(** An input position, consisting of an index into the input, a line number,
-    and a column number. *)
+type pos =
+  {
+    filename: string;
+    index: int;
+    line: int;
+    column: int;
+  }
+(** An input position. *)
 
 type error_message =
   | Unexpected_error of string
