@@ -668,6 +668,16 @@ let register_nl lines chars_after_nl (s: 'a state) =
   in
   Empty_ok ((), s1, No_error)
 
+let set_pos pos (s: 'a state) =
+  let s' =
+    { s with
+        line = pos.line;
+        filename = pos.filename;
+        line_begin = s.index - (pos.column - 1);
+    }
+  in
+  Empty_ok ((), s', No_error)
+
 
 (* Character parsers
    -------------------------------------------------------------------------- *)

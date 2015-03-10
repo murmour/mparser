@@ -542,6 +542,9 @@ val register_nl: int -> int -> (unit, 's) parser
     and sets the beginning of the current line to [chars_after_nl] chars
     before the current index. *)
 
+val set_pos: pos -> (unit, 's) parser
+(** Sets the current position. *)
+
 val eof: (unit, 's) parser
 (** Parses the end of the input. *)
 
