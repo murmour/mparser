@@ -7,7 +7,7 @@ License       : LGPL-2.1 with OCaml linking exception
 LicenseFile   : LICENSE.txt
 Plugins       : META (0.2)
 BuildTools    : ocamlbuild
-Homepage      : https://bitbucket.org/cakeplus/mparser
+Homepage      : https://github.org/cakeplus/mparser
 OASISFormat   : 0.4
 OCamlVersion  : >= 3.11
 AlphaFeatures : pure_interface
@@ -66,6 +66,6 @@ Library mparser_re
 # ------------------------------------------------------------------------------
 
 SourceRepository this
-  Type            : hg
-  Location        : https://bitbucket.org/cakeplus/mparser
+  Type            : git
+  Location        : https://github.org/cakeplus/mparser
   Tag             : 1.1

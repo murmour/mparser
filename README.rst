@@ -8,7 +8,7 @@ and the FParsec library for FSharp by Stephan Tolksdorf.
 
 See the file LICENSE.txt for copying conditions.
 
-Home page: https://bitbucket.org/cakeplus/mparser
+Home page: https://github.org/cakeplus/mparser
 
 MParser used to be a part of ocaml-base, a collection of useful OCaml
 libraries by Holger Arnold [1]_.
