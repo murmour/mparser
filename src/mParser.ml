@@ -49,7 +49,6 @@ type 's state = {
   index:      int;
   line:       int;
   line_begin: int;
-  filename:   string;
   user:       's;
 }
 
@@ -59,7 +58,6 @@ let init input user = {
   index      = 0;
   line       = 1;
   line_begin = 0;
-  filename   = "";
   user       = user;
 }
 
@@ -84,8 +82,8 @@ let advance_state s n =
 let advance_state_nl s n =
   if is_valid_index s then
     { s with
-        index      = s.index + n;
-        line       = s.line  + 1;
+        index = s.index + n;
+        line = s.line + 1;
         line_begin = s.index + n }
   else
     s
@@ -115,21 +113,10 @@ let match_string s str =
 (* Error handling
    -------------------------------------------------------------------------- *)
 
-type pos =
-  {
-    filename: string;
-    index: int;
-    line: int;
-    column: int;
-  }
+type pos = int * int * int
 
-let pos_of_state (s: 'a state) : pos =
-  {
-    filename = s.filename;
-    index = s.index;
-    line = s.line;
-    column = s.index - s.line_begin + 1;
-  }
+let pos_of_state s =
+  (s.index, s.line, s.index - s.line_begin + 1)
 
 type error_message =
   | Unexpected_error of string
@@ -181,10 +168,11 @@ let error_line input pos width indent =
   in
   let space = width - indent in
     if space > 10 then
-      let start   = pos.index - (min (pos.column - 1) (space / 2)) in
+      let index, _, column = pos in
+      let start   = index - (min (column - 1) (space / 2)) in
       let stop    = min (start + space) (CharStream.length input) in
       let length  = (find_nl start stop) - start in
-      let offset  = pos.index - start in
+      let offset  = index - start in
         if length > 0 then
             (String.make indent ' ')
           ^ (CharStream.read_string input start length) ^ "\n"
@@ -203,6 +191,7 @@ let rec concat_conj conj = function
   | x :: xs  -> sprintf "%s, %s" x (concat_conj conj xs)
 
 let rec error_message input pos messages width indent =
+  let index, line, column = pos in
 
   let unexp, exp, msg, comp, back, unknowns =
     List.fold_left
@@ -226,12 +215,8 @@ let rec error_message input pos messages width indent =
   let ind = String.make indent ' ' in
   let buf = Buffer.create 160 in
 
-  if pos.filename <> "" then
-    bprintf buf "%sError in file %s, line %d, column %d:\n%s"
-      ind pos.filename pos.line pos.column (error_line input pos width indent)
-  else
-    bprintf buf "%sError in line %d, column %d:\n%s"
-      ind pos.line pos.column (error_line input pos width indent);
+  bprintf buf "%sError in line %d, column %d:\n%s"
+    ind line column (error_line input pos width indent);
 
   if unexp <> [] then
     bprintf buf "%sUnexpected %s\n"
@@ -653,27 +638,25 @@ let update_user_state f s =
 let get_input s =
   Empty_ok (s.input, s, No_error)
 
-let get_index (s: 'a state) =
+let get_index s =
   Empty_ok (s.index, s, No_error)
 
 let get_pos s =
   Empty_ok (pos_of_state s, s, No_error)
 
-let register_nl lines chars_after_nl (s: 'a state) =
-  let s1 =
-    { s with
-        line = s.line + lines;
-        line_begin = s.index - chars_after_nl;
-    }
+let register_nl lines chars_after_nl s =
+  let s1 = {
+    s with
+      line = s.line + lines;
+      line_begin = s.index - chars_after_nl; }
   in
-  Empty_ok ((), s1, No_error)
+    Empty_ok ((), s1, No_error)
 
-let set_pos pos (s: 'a state) =
+let set_pos (index, line, column) s =
   let s' =
     { s with
-        line = pos.line;
-        filename = pos.filename;
-        line_begin = s.index - (pos.column - 1);
+        line;
+        line_begin = s.index - (column - 1);
     }
   in
   Empty_ok ((), s', No_error)
@@ -816,14 +799,12 @@ let nsatisfy n p s =
         Empty_failed (unknown_error s)
 
 let many_satisfy_loop p =
-  let rec loop i (s: 'a state) =
+  let rec loop i s =
     match read_index s i with
-      | Some c when p c ->
-          loop (i + 1) s
-      | _ ->
-          i - s.index
+      | Some c when p c -> loop (i + 1) s
+      | _ -> i - s.index
   in
-  fun (s: 'a state) -> loop s.index s
+    fun s -> loop s.index s
 
 let many_satisfy p s =
   let n = many_satisfy_loop p s in
