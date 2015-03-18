@@ -7,6 +7,7 @@
 	separate, optional subpackage.
 	* New (MParser_RE): support for RE-based regular expressions.
 	* Fix: .cmxs files (native plugins) are built correctly now.
+	* New: [MParser.set_pos].
 
 
 2013-05-02  Max Mouratov  <mmouratov@gmail.com>
