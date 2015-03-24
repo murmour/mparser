@@ -32,10 +32,12 @@ Installing
 
 1. Uncompress the source archive and go to the root of the package.
 2. Run ``ocaml setup.ml -configure``. Optional flags:
+
    - ``--enable-pcre`` -- support for PCRE-based regular expressions
      (MParser_PCRE module, mparser.pcre findlib package).
    - ``--enable-re`` -- support for RE-based regular expressions
      (MParser_RE module, mparser.re findlib package).
+
 3. Run ``ocaml setup.ml -build``.
 4. Run ``ocaml setup.ml -install``.
 
