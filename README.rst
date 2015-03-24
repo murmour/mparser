@@ -23,8 +23,8 @@ In order to compile this package, you will need:
 
 * ocaml (>= 3.11).
 * findlib [3]_.
-* optional dependency: pcre-ocaml [4]_ for mparser.pcre.
-* optional dependency: re [5]_ for mparser.re.
+* optional dependency: pcre-ocaml [4]_ for ``mparser.pcre``.
+* optional dependency: re [5]_ for ``mparser.re``.
 
 
 Installing
@@ -34,9 +34,9 @@ Installing
 2. Run ``ocaml setup.ml -configure``. Optional flags:
 
    - ``--enable-pcre`` -- support for PCRE-based regular expressions
-     (MParser_PCRE module, mparser.pcre findlib package).
+     (``MParser_PCRE`` module, ``mparser.pcre`` findlib package).
    - ``--enable-re`` -- support for RE-based regular expressions
-     (MParser_RE module, mparser.re findlib package).
+     (``MParser_RE`` module, ``mparser.re`` findlib package).
 
 3. Run ``ocaml setup.ml -build``.
 4. Run ``ocaml setup.ml -install``.
