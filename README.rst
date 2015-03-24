@@ -8,7 +8,7 @@ and the FParsec library for FSharp by Stephan Tolksdorf.
 
 See the file LICENSE.txt for copying conditions.
 
-Home page: https://github.org/cakeplus/mparser
+Home page: https://github.com/cakeplus/mparser
 
 MParser used to be a part of ocaml-base, a collection of useful OCaml
 libraries by Holger Arnold [1]_.
@@ -32,8 +32,10 @@ Installing
 
 1. Uncompress the source archive and go to the root of the package.
 2. Run ``ocaml setup.ml -configure``. Optional flags:
-   1) ``--enable-pcre`` -- support for PCRE-based regular expressions (MParser_PCRE).
-   2) ``--enable-re`` -- support for RE-based regular expressions (MParser_RE).
+   - ``--enable-pcre`` -- support for PCRE-based regular expressions
+     (MParser_PCRE module, mparser.pcre findlib package).
+   - ``--enable-re`` -- support for RE-based regular expressions
+     (MParser_RE module, mparser.re findlib package).
 3. Run ``ocaml setup.ml -build``.
 4. Run ``ocaml setup.ml -install``.
 
