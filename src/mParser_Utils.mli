@@ -2,7 +2,7 @@
 (* MParser, a simple monadic parser combinator library
    -----------------------------------------------------------------------------
    Copyright (C) 2008, Holger Arnold
-                 2014, Max Mouratov
+                 2014-2016, Max Mouratov
 
    License:
      This library is free software; you can redistribute it and/or
@@ -30,7 +30,7 @@ module IO: sig
   val input: in_channel -> string -> int -> int -> int
   (** [input chn buffer pos length] reads up to [length] characters from the
       channel [chn] and stores them in the string [buffer], starting at position
-      [pos].  It returns the actual number of characters read.  A value less
+      [pos]. It returns the actual number of characters read. A value less
       than [length] is only returned if there are less than [length] characters
       available from [chn] (the [input] function in the [Pervasives] module is
       allowed to read less than [length] characters if it "finds it convenient

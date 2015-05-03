@@ -2,7 +2,7 @@
 (* MParser, a simple monadic parser combinator library
    -----------------------------------------------------------------------------
    Copyright (C) 2008, Holger Arnold
-                 2014, Max Mouratov
+                 2014-2016, Max Mouratov
 
    License:
      This library is free software; you can redistribute it and/or
@@ -24,26 +24,28 @@
 module type Sig = sig
 
   type t
-  (** The type of a regular expression *)
+  (** The type of a regular expression. *)
 
   type substrings
-  (** Substrings matched by a regular expression *)
+  (** Substrings matched by a regular expression. *)
+
 
   val make: string -> t
-  (** Compiles a regular expression *)
+  (** Compiles a regular expression. *)
 
   val get_substring: substrings -> int -> string option
   (** Extracts a single substring.
-      Returns None if the group did not match *)
+      Returns None if the group did not match. *)
 
   val get_all_substrings: substrings -> string array
   (** Extracts all the matched substrings.
       Includes the full match at index 0.
       If a subpattern did not capture a substring, the empty
-      string is returned in the corresponding position instead *)
+      string is returned in the corresponding position instead. *)
 
   val exec: rex: t -> pos: int -> string -> substrings option
-  (** Attemts to match the string with a regular expression,
-      starting from the position [pos]. Returns [None] on failure *)
+  (** Attemts to match the string with a regular expression, starting
+      from the position [pos]. Returns the matched substrings or [None]
+      on failure. *)
 
 end

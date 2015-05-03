@@ -2,7 +2,7 @@
 (* MParser, a simple monadic parser combinator library
    -----------------------------------------------------------------------------
    Copyright (C) 2008, Holger Arnold
-                 2014, Max Mouratov
+                 2014-2016, Max Mouratov
 
    License:
      This library is free software; you can redistribute it and/or
@@ -25,7 +25,7 @@
     read a stream sequentially and occasionally backtrack over a bounded
     distance, which is a common usage pattern of backtracking parsers.
 
-    The characters in a character stream provides by this module are accessed
+    The characters in a character stream provided by this module are accessed
     based on their position in the stream. A position [pos] is valid in the
     stream [s] if it satisfies [0 <= pos < length s]. Character streams can
     be created from input channels and from strings.
@@ -33,7 +33,8 @@
 
 
 type t
-(** The type of character streams. *)
+(** A character stream. *)
+
 
 val from_string: string -> t
 (** [from_string s] creates a character stream that contains the characters of
@@ -101,7 +102,7 @@ val match_string: t -> int -> string -> bool
 
 (** {2 Regexp-related features} *)
 
-module MakeRx: functor (Rx: MParser_Regexp.Sig) -> sig
+module MakeRx (Rx: MParser_Regexp.Sig): sig
 
   val match_regexp: t -> int -> Rx.t -> Rx.substrings option
   (** [match_regexp s pos rex] matches the regular expression [rex] against the

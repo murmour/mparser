@@ -1,16 +1,16 @@
-Name          : MParser
-Version       : 1.1
-Synopsis      : A simple monadic parser combinator library
-Authors       : Holger Arnold, Max Mouratov
-Maintainers   : Max Mouratov
-License       : LGPL-2.1 with OCaml linking exception
-LicenseFile   : LICENSE.txt
-Plugins       : META (0.2)
-BuildTools    : ocamlbuild
-Homepage      : https://github.com/cakeplus/mparser
-OASISFormat   : 0.4
-OCamlVersion  : >= 3.11
-AlphaFeatures : pure_interface
+Name: MParser
+Version: 1.1
+Synopsis: A simple monadic parser combinator library
+Authors: Holger Arnold, Max Mouratov
+Maintainers: Max Mouratov
+License: LGPL-2.1 with OCaml linking exception
+LicenseFile: LICENSE.txt
+Plugins: META (0.2)
+BuildTools: ocamlbuild
+Homepage: https://github.com/cakeplus/mparser
+OASISFormat: 0.4
+OCamlVersion: >= 3.11
+AlphaFeatures: pure_interface
 
 Description:
   This library implements a rather complete and efficient monadic
@@ -38,34 +38,34 @@ Flag re
 # ------------------------------------------------------------------------------
 
 Library mparser
-  Path            : src
-  Modules         : MParser, MParser_Regexp, MParser_Char_Stream
-  InternalModules : MParser_Utils
-  FindlibName     : mparser
+  Path: src
+  Modules: MParser, MParser_Regexp, MParser_Char_Stream
+  InternalModules: MParser_Utils
+  FindlibName: mparser
 
 Library mparser_pcre
-  Build          $: flag(pcre) || flag(all)
-  Install        $: flag(pcre) || flag(all)
-  Path            : src
-  Modules         : MParser_PCRE
-  FindlibParent   : mparser
-  FindlibName     : pcre
-  BuildDepends    : mparser, pcre
+  Build$: flag(pcre) || flag(all)
+  Install$: flag(pcre) || flag(all)
+  Path: src
+  Modules: MParser_PCRE
+  FindlibParent: mparser
+  FindlibName: pcre
+  BuildDepends: mparser, pcre
 
 Library mparser_re
-  Build          $: flag(re) || flag(all)
-  Install        $: flag(re) || flag(all)
-  Path            : src
-  Modules         : MParser_RE
-  FindlibParent   : mparser
-  FindlibName     : re
-  BuildDepends    : mparser, re.perl
+  Build$: flag(re) || flag(all)
+  Install$: flag(re) || flag(all)
+  Path: src
+  Modules: MParser_RE
+  FindlibParent: mparser
+  FindlibName: re
+  BuildDepends: mparser, re.perl
 
 
 # Misc
 # ------------------------------------------------------------------------------
 
 SourceRepository this
-  Type            : git
-  Location        : https://github.com/cakeplus/mparser
-  Tag             : 1.1
+  Type: git
+  Location: https://github.com/cakeplus/mparser
+  Tag: 1.1
