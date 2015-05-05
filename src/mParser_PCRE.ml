@@ -27,8 +27,11 @@ module Regexp = struct
   type substrings = Pcre.substrings
 
 
+  let compile_flags =
+    Pcre.cflags [ `ANCHORED ]
+
   let make pattern =
-    Pcre.regexp pattern
+    Pcre.regexp ~iflags:compile_flags pattern
 
   let get_substring s idx =
     try
@@ -39,12 +42,9 @@ module Regexp = struct
   let get_all_substrings s =
     Pcre.get_substrings s
 
-  let default_flags =
-    Pcre.rflags [ `ANCHORED ]
-
   let exec ~rex ~pos s =
     try
-      Some (Pcre.exec ~pos ~iflags:default_flags ~rex s)
+      Some (Pcre.exec ~pos ~rex s)
     with Not_found ->
       None
 

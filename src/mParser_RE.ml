@@ -28,11 +28,11 @@ module Regexp: MParser_Regexp.Sig = struct
   type substrings = Re.substrings
 
 
-  let default_flags =
+  let compile_flags =
     [ `Anchored ]
 
   let make pattern =
-    Re_perl.(compile (re ~opts:default_flags pattern))
+    Re_perl.(compile (re ~opts:compile_flags pattern))
 
   let get_substring s idx =
     try
