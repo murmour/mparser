@@ -817,9 +817,9 @@ val expression: (('a, 's) operator list) list -> ('a, 's) t -> ('a, 's) t
 
 (** {2 Regexp-related features} *)
 
-module MakeRx (Rx: MParser_Regexp.Sig): sig
+module MakeRegexp (Regexp: MParser_Sig.Regexp): sig
 
-  val match_regexp: 's state -> Rx.t -> Rx.substrings option
+  val match_regexp: 's state -> Regexp.t -> Regexp.substrings option
   (** [match_regexp s rex] matches the regular expression [rex] against the
       input. It returns [Some substrings] if the match succeeds, where
       [substrings] contains the matched substrings. If the match fails or if
@@ -832,10 +832,10 @@ module MakeRx (Rx: MParser_Regexp.Sig): sig
       creating the input character stream. See the documentation of the
       {!MParser_Char_Stream} module for more information. *)
 
-  val make_regexp: string -> Rx.t
+  val make_regexp: string -> Regexp.t
   (** Creates a regular expression from a string. *)
 
-  val regexp: Rx.t -> (string, 's) t
+  val regexp: Regexp.t -> (string, 's) t
   (** [regexp rex] parses any string matching the regular expression [rex] and
       returns it.
 
@@ -845,7 +845,7 @@ module MakeRx (Rx: MParser_Regexp.Sig): sig
       creating the input character stream. See the documentation of the
       {!MParser_Char_Stream} module for more information. *)
 
-  val regexp_substrings: Rx.t -> (string array, 's) t
+  val regexp_substrings: Regexp.t -> (string array, 's) t
   (** [regexp_substrings rex] parses any string matching the regular expression
       [rex] and returns an array containing all matched substrings.
 

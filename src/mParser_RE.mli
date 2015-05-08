@@ -22,6 +22,6 @@
 *)
 
 
-module Regexp: MParser_Regexp.Sig
+module Regexp: MParser_Sig.Regexp
 
-include module type of MParser.MakeRx (Regexp)
+include module type of MParser.MakeRegexp (Regexp)

@@ -21,7 +21,7 @@
 *)
 
 
-module Regexp = struct
+module Regexp: MParser_Sig.Regexp = struct
 
   type t = Pcre.regexp
   type substrings = Pcre.substrings
@@ -50,4 +50,4 @@ module Regexp = struct
 
 end
 
-include MParser.MakeRx (Regexp)
+include MParser.MakeRegexp (Regexp)

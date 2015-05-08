@@ -16,15 +16,16 @@
      See the GNU Library General Public License version 2.1 for more details
      (enclosed in the file LICENSE.txt).
 
-   Module MParser_Regexp:
-     The interface of a pluggable regular expression engine.
+   Module MParser_Sig:
+     Common module signatures.
 *)
 
 
-module type Sig = sig
+(** A pluggable regular expression engine. *)
+module type Regexp = sig
 
   type t
-  (** The type of a regular expression. *)
+  (** A compiled regular expression. *)
 
   type substrings
   (** Substrings matched by a regular expression. *)

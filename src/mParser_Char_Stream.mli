@@ -102,9 +102,9 @@ val match_string: t -> int -> string -> bool
 
 (** {2 Regexp-related features} *)
 
-module MakeRx (Rx: MParser_Regexp.Sig): sig
+module MakeRegexp (Regexp: MParser_Sig.Regexp): sig
 
-  val match_regexp: t -> int -> Rx.t -> Rx.substrings option
+  val match_regexp: t -> int -> Regexp.t -> Regexp.substrings option
   (** [match_regexp s pos rex] matches the regular expression [rex] against the
       characters in [s] starting at position [pos]. It returns [Some
       substrings] if the match succeeds, where [substrings] contains the matched

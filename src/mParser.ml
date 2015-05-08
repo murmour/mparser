@@ -1123,22 +1123,22 @@ let expression operators term =
 (* Regexp-related features
    -------------------------------------------------------------------------- *)
 
-module MakeRx (Rx: MParser_Regexp.Sig) = struct
-  module CharStreamRx = MParser_Char_Stream.MakeRx (Rx)
+module MakeRegexp (Regexp: MParser_Sig.Regexp) = struct
+  module CharStreamRx = MParser_Char_Stream.MakeRegexp (Regexp)
 
 
   let match_regexp s rex =
     CharStreamRx.match_regexp s.input s.index rex
 
   let make_regexp pat =
-    Rx.make pat
+    Regexp.make pat
 
   let regexp r s =
     match match_regexp s r with
       | None ->
           zero s
       | Some substrings ->
-          (match Rx.get_substring substrings 0 with
+          (match Regexp.get_substring substrings 0 with
             | Some result ->
                 let n = String.length result in
                 if n > 0 then
@@ -1153,7 +1153,7 @@ module MakeRx (Rx: MParser_Regexp.Sig) = struct
       | None ->
           zero s
       | Some substrings ->
-          let result = Rx.get_all_substrings substrings in
+          let result = Regexp.get_all_substrings substrings in
           let n = String.length (Array.get result 0) in
           if n > 0 then
             Consumed_ok (result, advance_state s n, No_error)

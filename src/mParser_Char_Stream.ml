@@ -232,7 +232,7 @@ let match_string s pos str =
 (* Regexp-related features
    -------------------------------------------------------------------------- *)
 
-module MakeRx (Rx: MParser_Regexp.Sig) = struct
+module MakeRegexp (Regexp: MParser_Sig.Regexp) = struct
 
   let match_regexp s pos rex =
     if not (is_valid_pos s pos) then
@@ -240,6 +240,6 @@ module MakeRx (Rx: MParser_Regexp.Sig) = struct
     else
       (if not (is_visible s pos && is_visible s (pos + s.min_rspace)) then
          perform_unsafe_seek s pos;
-       Rx.exec ~rex ~pos:(pos - s.buffer_pos) s.buffer)
+       Regexp.exec ~rex ~pos:(pos - s.buffer_pos) s.buffer)
 
 end

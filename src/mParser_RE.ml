@@ -22,7 +22,7 @@
 *)
 
 
-module Regexp: MParser_Regexp.Sig = struct
+module Regexp: MParser_Sig.Regexp = struct
 
   type t = Re.re
   type substrings = Re.substrings
@@ -51,4 +51,4 @@ module Regexp: MParser_Regexp.Sig = struct
 
 end
 
-include MParser.MakeRx (Regexp)
+include MParser.MakeRegexp (Regexp)
