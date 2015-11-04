@@ -16,7 +16,7 @@
      See the GNU Library General Public License version 2.1 for more details
      (enclosed in the file LICENSE.txt).
 
-   Module CharStream:
+   Module MParser_Char_Stream:
      Character streams.
 *)
 
@@ -54,7 +54,7 @@ type t = char_stream
 *)
 let read_block s pos length =
   if IO.input s.input s.buffer pos length = length then ()
-  else failwith "CharStream.read_block: I/O error"
+  else failwith "MParser_Char_Stream.read_block: I/O error"
 
 let from_string str =
   let len = String.length str in {
@@ -83,13 +83,13 @@ let from_channel ?(block_size = 1048576) ?block_overlap ?min_rspace chn =
       | None -> block_size / 64 in
 
   if block_size < 1 || block_size > Sys.max_string_length then
-    invalid_arg "CharStream.from_channel: invalid block size";
+    invalid_arg "MParser_Char_Stream.from_channel: invalid block size";
 
   if block_overlap < 1 || block_overlap > block_size / 2 then
-    invalid_arg "CharStream.from_channel: invalid block overlap";
+    invalid_arg "MParser_Char_Stream.from_channel: invalid block overlap";
 
   if min_rspace < 1 || min_rspace > block_overlap then
-    invalid_arg "CharStream.from_channel: invalid minimum rspace";
+    invalid_arg "MParser_Char_Stream.from_channel: invalid minimum rspace";
 
   let length       = in_channel_length chn in
   let block_size   = min block_size length in
@@ -165,7 +165,7 @@ let seek s pos =
   if is_valid_pos s pos then begin
     unsafe_seek s pos
   end else
-    invalid_arg "CharStream.seek: invalid stream position"
+    invalid_arg "MParser_Char_Stream.seek: invalid stream position"
 
 let chars_left s pos =
   if is_valid_pos s pos then

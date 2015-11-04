@@ -26,8 +26,8 @@
     efficient and produce good error messages due to a controlled use of
     backtracking.  The performance of the resulting parsers should be
     sufficient for most applications.  The parsers get their input from
-    character streams provided by the {!CharStream} module, which means that
-    it is possible to parse files up to a size of at least 1GB.
+    character streams provided by the {!MParser_Char_Stream} module, which means
+    that it is possible to parse files up to a size of at least 1GB.
 
     The [MParser] module is an OCaml version of the
     {{:http://www.quanttec.com/fparsec}FParsec} library for F# by Stephan
@@ -64,7 +64,7 @@
 type 's state
 (** The type of parser states. *)
 
-val init: CharStream.t -> 's -> 's state
+val init: MParser_Char_Stream.t -> 's -> 's state
 (** [init input user] returns an initial parser state using the input string
     [input] and the initial user state [user]. *)
 
@@ -269,7 +269,7 @@ type 'a result =
   | Success of 'a
   | Failed of string * error
 
-val parse: ('a, 's) parser -> CharStream.t -> 's -> 'a result
+val parse: ('a, 's) parser -> MParser_Char_Stream.t -> 's -> 'a result
 (** [parse p input user] runs the parser [p] on the input [input] using the
     initial user state [user]. *)
 
@@ -523,7 +523,7 @@ val skip_many_until: ('a, 's) parser -> ('b, 's) parser -> (unit, 's) parser
 
 (** {2 Parsers accessing the parser state} *)
 
-val get_input: (CharStream.t, 's) parser
+val get_input: (MParser_Char_Stream.t, 's) parser
 (** Returns the input stream. *)
 
 val get_index: (int, 's) parser
@@ -814,7 +814,7 @@ module MakeRx: functor (Rx: MParser_Regexp.Sig) -> sig
       against the complete remaining substring.  The minimum number of
       characters that are guaranteed to be used for matching is specified when
       creating the input character stream. See the documentation of the
-      {!CharStream} module for more information. *)
+      {!MParser_Char_Stream} module for more information. *)
 
   val make_regexp: string -> Rx.t
   (** Creates a regular expression from a string. *)
@@ -827,7 +827,7 @@ module MakeRx: functor (Rx: MParser_Regexp.Sig) -> sig
       against the complete remaining substring.  The minimum number of
       characters that are guaranteed to be used for matching is specified when
       creating the input character stream.  See the documentation of the
-      {!CharStream} module for more information. *)
+      {!MParser_Char_Stream} module for more information. *)
 
   val regexp_substrings: Rx.t -> (string array, 's) parser
   (** [regexp_substrings rex] parses any string matching the regular expression
@@ -837,7 +837,7 @@ module MakeRx: functor (Rx: MParser_Regexp.Sig) -> sig
       against the complete remaining substring.  The minimum number of
       characters that are guaranteed to be used for matching is specified when
       creating the input character stream.  See the documentation of the
-      {!CharStream} module for more information. *)
+      {!MParser_Char_Stream} module for more information. *)
 
   (** Predefined tokens parsers.
 

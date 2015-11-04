@@ -39,7 +39,7 @@ Flag re
 
 Library mparser
   Path            : src
-  Modules         : MParser, MParser_Regexp, CharStream
+  Modules         : MParser, MParser_Regexp, MParser_Char_Stream
   InternalModules : MParser_Utils
   FindlibName     : mparser
 

@@ -44,7 +44,7 @@ open MParser_Utils
    -------------------------------------------------------------------------- *)
 
 type 's state = {
-  input:      CharStream.t;
+  input:      MParser_Char_Stream.t;
   length:     int;
   index:      int;
   line:       int;
@@ -54,7 +54,7 @@ type 's state = {
 
 let init input user = {
   input      = input;
-  length     = CharStream.length input;
+  length     = MParser_Char_Stream.length input;
   index      = 0;
   line       = 1;
   line_begin = 0;
@@ -89,25 +89,25 @@ let advance_state_nl s n =
     s
 
 let read_char s =
-  CharStream.read_char s.input s.index
+  MParser_Char_Stream.read_char s.input s.index
 
 let read_index s i =
-  CharStream.read_char s.input i
+  MParser_Char_Stream.read_char s.input i
 
 let next_char s =
-  CharStream.read_char s.input (s.index + 1)
+  MParser_Char_Stream.read_char s.input (s.index + 1)
 
 let prev_char s =
-  CharStream.read_char s.input (s.index - 1)
+  MParser_Char_Stream.read_char s.input (s.index - 1)
 
 let read_string s n =
-  CharStream.read_string s.input s.index n
+  MParser_Char_Stream.read_string s.input s.index n
 
 let match_char s c =
-  CharStream.match_char s.input s.index c
+  MParser_Char_Stream.match_char s.input s.index c
 
 let match_string s str =
-  CharStream.match_string s.input s.index str
+  MParser_Char_Stream.match_string s.input s.index str
 
 
 (* Error handling
@@ -162,7 +162,7 @@ let merge_errors e1 e2 =
 let error_line input pos width indent =
   let rec find_nl i stop =
     if i >= stop then i
-    else match CharStream.read_char input i with
+    else match MParser_Char_Stream.read_char input i with
       | None | Some '\n' | Some '\r' -> i
       | _ -> find_nl (i + 1) stop
   in
@@ -170,12 +170,12 @@ let error_line input pos width indent =
     if space > 10 then
       let index, _, column = pos in
       let start   = index - (min (column - 1) (space / 2)) in
-      let stop    = min (start + space) (CharStream.length input) in
+      let stop    = min (start + space) (MParser_Char_Stream.length input) in
       let length  = (find_nl start stop) - start in
       let offset  = index - start in
         if length > 0 then
             (String.make indent ' ')
-          ^ (CharStream.read_string input start length) ^ "\n"
+          ^ (MParser_Char_Stream.read_string input start length) ^ "\n"
           ^ (String.make (indent + offset) ' ') ^ "^\n"
         else "\n"
     else "\n"
@@ -314,11 +314,11 @@ let parse p input user =
                 Failed ("", e) )
 
 let parse_string p str user =
-  let input = CharStream.from_string str in
+  let input = MParser_Char_Stream.from_string str in
     parse p input user
 
 let parse_channel p chn user =
-  let input = CharStream.from_channel chn in
+  let input = MParser_Char_Stream.from_channel chn in
     parse p input user
 
 
@@ -998,10 +998,10 @@ let expression operators term =
    -------------------------------------------------------------------------- *)
 
 module MakeRx = functor (Rx: MParser_Regexp.Sig) -> struct
-  module CharStreamRx = CharStream.MakeRx (Rx)
+  module Char_StreamRx = MParser_Char_Stream.MakeRx (Rx)
 
   let match_regexp s rex =
-    CharStreamRx.match_regexp s.input s.index rex
+    Char_StreamRx.match_regexp s.input s.index rex
 
   let make_regexp pat =
     Rx.make pat

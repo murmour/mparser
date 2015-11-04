@@ -16,14 +16,14 @@
      See the GNU Library General Public License version 2.1 for more details
      (enclosed in the file LICENSE.txt).
 
-   Module CharStream:
+   Module MParser_Char_Stream:
      Character streams.
 *)
 
-(** The [CharStream] module provides a position-based interface to character
-    streams. The streams are optimized for applications that mostly read a
-    stream sequentially and occasionally backtrack over a bounded distance,
-    which is a common usage pattern of backtracking parsers.
+(** The [MParser_Char_Stream] module provides a position-based interface to
+    character streams. The streams are optimized for applications that mostly
+    read a stream sequentially and occasionally backtrack over a bounded
+    distance, which is a common usage pattern of backtracking parsers.
 
     The characters in a character stream provides by this module are accessed
     based on their position in the stream. A position [pos] is valid in the
@@ -112,7 +112,7 @@ module MakeRx: functor (Rx: MParser_Regexp.Sig) -> sig
 
       It is not guaranteed that [rex] is matched against the complete substream
       starting at the current position. The [min_rspace] parameter of
-      {!CharStream.from_channel} specifies the minimum number of characters
-      avaliable for matching. *)
+      {!MParser_Char_Stream.from_channel} specifies the minimum number of
+      characters avaliable for matching. *)
 
 end
