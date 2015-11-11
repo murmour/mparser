@@ -592,6 +592,9 @@ let many_rev p =
 let many1_rev p =
   many1_fold_apply (fun xs x -> x :: xs) [] (fun x -> x) p
 
+let skip p =
+  p |>> ignore
+
 let skip_many p =
   many_fold_apply (fun _ _ -> ()) () (fun _ -> ()) p
 
@@ -744,7 +747,7 @@ let set_pos (index, line, column) s =
 (* Character parsers
    -------------------------------------------------------------------------- *)
 
-let skip n s =
+let skip_nchars n s =
   if n < 0 then
     invalid_arg "MParser.skip: negative offset"
   else

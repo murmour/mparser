@@ -440,6 +440,9 @@ val many_rev: ('a, 's) t -> ('a list, 's) t
 val many1_rev: ('a, 's) t -> ('a list, 's) t
 (** [many1_rev p] is equivalent to [many1 p |>> List.rev]. *)
 
+val skip: ('a, 's) t -> (unit, 's) t
+(** [skip p] is equivalent to [p |>> ignore]. *)
+
 val skip_many: ('a, 's) t -> (unit, 's) t
 (** [skip_many p] is equivalent to [many p |>> ignore]. *)
 
@@ -576,8 +579,8 @@ val update_user_state: ('s -> 's) -> (unit, 's) t
     the general combinators. Generally, the basic character and string
     parsers only consume input when they succeed. *)
 
-val skip: int -> (unit, 's) t
-(** [skip n] skips [n] characters of the input. Newlines are not registered.
+val skip_nchars: int -> (unit, 's) t
+(** [skip_nchars n] skips [n] characters of the input. Newlines are not registered.
     This parser never fails, even if there are less than [n] characters left.
 
     @raise Invalid_argument if [n < 0]. *)
