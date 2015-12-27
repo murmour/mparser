@@ -340,6 +340,12 @@ val (>>): ('a, 's) t -> ('b, 's) t -> ('b, 's) t
 val (<<): ('a, 's) t -> ('b, 's) t -> ('a, 's) t
 (** [p << q] is equivalent to [p >>= (fun x -> q >> return x)]. *)
 
+val (>>>): ('a, 's) t -> ('b, 's) t -> ('b, 's) t
+(** Camlp4-compatible alternative to [>>]. *)
+
+val (<<<): ('a, 's) t -> ('b, 's) t -> ('a, 's) t
+(** Camlp4-compatible alternative to [<<]. *)
+
 val (>>$): ('a, 's) t -> 'b -> ('b, 's) t
 (** [p >>$ x] is equivalent to [p >> return x]. *)
 

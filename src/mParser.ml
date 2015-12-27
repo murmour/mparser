@@ -419,6 +419,10 @@ let (>>) p q =
 let (<<) p q =
   p >>= fun x -> q >> return x
 
+let (>>>) = (>>)
+
+let (<<<) = (<<)
+
 let (>>$) p x =
   p >> return x
 
