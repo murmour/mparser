@@ -1,3 +1,21 @@
+2016-01-20  Max Mouratov  <mmouratov@gmail.com>
+
+	Version 1.2
+
+	* New: [MParser.(>>)] and [MParser.(<<)] now have aliases
+	[MParser.(>>>)] and [MParser.(<<<)], the names of which do not cause
+	conflicts with the Camlp4 parser ("<<" is the start of a quotation).
+	* New: [MParser.skip p] is now an alias for [p |>> ignore]. The old
+	[MParser.skip] is now available as [MParser.skip_nchars], which is a
+	more suitable name for its semantics.
+	* New (MParser_PCRE): [`Anchored] is now a compilation flag instead
+	of a runtime one, which helps a little bit with performance.
+	* Fix: [CharStream] was renamed to [MParser_Char_Stream] in order to
+	avoid link-time module name conflicts with other libraries.
+	* Fix (MParser_Char_Stream): Mutable strings were replaced with
+	[Bytes.t] in the implementation, as part of transition to modern OCaml.
+
+
 2014-07-04  Max Mouratov  <mmouratov@gmail.com>
 
 	Version 1.1
@@ -14,8 +32,8 @@
 
 	Version 1.0.1
 
-	* Fix: 'expecting' and 'unexpected' error messages must not
-	contain duplicate items.
+	* Fix: "expecting" and "unexpected" error messages must not contain
+	duplicate items.
 	* New: A tutorial section in the README file.
 
 
