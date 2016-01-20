@@ -1,5 +1,5 @@
 Name: MParser
-Version: 1.1
+Version: 1.2
 Synopsis: A simple monadic parser combinator library
 Authors: Holger Arnold, Max Mouratov
 Maintainers: Max Mouratov
@@ -69,4 +69,4 @@ Library mparser_re
 SourceRepository this
   Type: git
   Location: https://github.com/cakeplus/mparser
-  Tag: 1.1
+  Tag: 1.2
