@@ -9,7 +9,7 @@ Plugins: META (0.2)
 BuildTools: ocamlbuild
 Homepage: https://github.com/cakeplus/mparser
 OASISFormat: 0.4
-OCamlVersion: >= 3.11
+OCamlVersion: >= 3.12
 AlphaFeatures: pure_interface
 
 Description:
