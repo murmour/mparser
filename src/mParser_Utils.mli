@@ -27,9 +27,9 @@ val ( |> ): 'a -> ('a -> 'b) -> 'b
 
 module IO: sig
 
-  val input: in_channel -> string -> int -> int -> int
-  (** [input chn buffer pos length] reads up to [length] characters from the
-      channel [chn] and stores them in the string [buffer], starting at position
+  val input: in_channel -> Bytes.t -> int -> int -> int
+  (** [input chn b pos length] reads up to [length] characters from the
+      channel [chn] and stores them in the byte-buffer [b], starting at position
       [pos]. It returns the actual number of characters read. A value less
       than [length] is only returned if there are less than [length] characters
       available from [chn] (the [input] function in the [Pervasives] module is
@@ -37,7 +37,7 @@ module IO: sig
       to do a partial read").
 
       @raise Invalid_argument if [pos] and [length] do not specify a valid
-      substring of [buffer]. *)
+      substring of [b]. *)
 
 end
 
@@ -45,26 +45,32 @@ end
 module String: sig
   include module type of String
 
-  val match_sub: string -> int -> string -> bool
-  (** [match_sub s start pat] returns [true] if the string [s] contains the
-      string [pat] as a substring starting at position [start], and [false]
-      otherwise.
-
-      @raise Invalid_argument if [start] is no valid index in [s]. *)
-
-  val match_sub2: string -> int -> string -> int -> int -> bool
-  (** [match_sub2 s1 start1 s2 start2 len] returns [true] if [sub s1 start1
-      len = sub s2 start2 len], and [false] otherwise.
-
-      @raise Invalid_argument if [start1], [start2], and [len] do not specify
-      valid substrings of [s1] and [s2]. *)
-
   val unique: string list -> string list
   (** Returns the sorted list of unique elements in the list of strings [l] *)
 
   val for_all: (char -> bool) -> string -> bool
   (** [for_all p s] returns [true] if [p c = true] for all characters [c] of
       [s], and [false] otherwise. *)
+
+end
+
+
+module Bytes: sig
+  include module type of Bytes
+
+  val match_sub: Bytes.t -> int -> string -> bool
+  (** [match_sub b start pat] returns [true] if the byte-buffer [b] contains
+      the string [pat] as a substring starting at position [start], and
+      [false] otherwise.
+
+      @raise Invalid_argument if [start] is no valid index in [b]. *)
+
+  val match_sub2: Bytes.t -> int -> string -> int -> int -> bool
+  (** [match_sub2 b1 start1 s2 start2 len] returns [true] if [Bytes.sub b1
+      start1 len = String.sub s2 start2 len], and [false] otherwise.
+
+      @raise Invalid_argument if [start1], [start2], and [len] do not specify
+      valid substrings of [b1] and [s2]. *)
 
 end
 

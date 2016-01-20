@@ -31,7 +31,7 @@ type t =
     min_rspace: int;         (** Minimum space for regexp matching. *)
     length: int;             (** Length of the stream in chars. *)
     input: in_channel;       (** Input if created from a channel. *)
-    buffer: string;          (** The block buffer. *)
+    buffer: Bytes.t;         (** The block buffer. *)
     mutable buffer_pos: int; (** Stream position of the current block. *)
   }
 
@@ -61,7 +61,7 @@ let from_string str =
     min_rspace = 0;
     length;
     input = Obj.magic 0;
-    buffer = str;
+    buffer = Bytes.of_string str;
     buffer_pos = 0;
   }
 
@@ -88,7 +88,7 @@ let from_channel ?(block_size = 1048576) ?block_overlap ?min_rspace input =
 
   let length = in_channel_length input in
   let block_size = min block_size length in
-  let buffer = String.create block_size in
+  let buffer = Bytes.create block_size in
   let buffer_pos = pos_in input in
 
   let s =
@@ -129,12 +129,12 @@ let perform_unsafe_seek s pos =
   let offset = new_buffer_pos - s.buffer_pos in
   if offset > 0 && offset < s.block_size then
     let overlap = s.block_size - offset in
-    String.blit s.buffer (s.block_size - overlap) s.buffer 0 overlap;
+    Bytes.blit s.buffer (s.block_size - overlap) s.buffer 0 overlap;
     seek_in s.input (new_buffer_pos + overlap);
     read_block s overlap (s.block_size - overlap)
   else if offset < 0 && -offset < s.block_size then
     let overlap = s.block_size + offset in
-    String.blit s.buffer 0 s.buffer (s.block_size - overlap) overlap;
+    Bytes.blit s.buffer 0 s.buffer (s.block_size - overlap) overlap;
     seek_in s.input new_buffer_pos;
     read_block s 0 (s.block_size - overlap)
   else
@@ -170,31 +170,34 @@ let read_char s pos =
     None
   else
     (unsafe_seek s pos;
-     Some (String.unsafe_get s.buffer (pos - s.buffer_pos)))
+     Some (Bytes.unsafe_get s.buffer (pos - s.buffer_pos)))
 
 let read_string s pos maxlen =
   if not (is_valid_pos s pos) then
     ""
   else
-    let len = min maxlen (chars_left s pos) in
-    if is_visible s pos && is_visible s (pos + len - 1) then
-      String.sub s.buffer (pos - s.buffer_pos) len
-    else if len <= s.block_overlap then
-      (perform_unsafe_seek s pos;
-       String.sub s.buffer (pos - s.buffer_pos) len)
-    else
-      (let result = String.create len in
-       let chars_left = ref len in
-       let chars_read = ref 0 in
-       seek_in s.input pos;
-       while !chars_left > 0 do
-         let nchars = min s.block_size !chars_left in
-         read_block s 0 nchars;
-         String.blit s.buffer 0 result !chars_read nchars;
-         chars_left := !chars_left - nchars;
-         chars_read := !chars_read + nchars
-       done;
-       result)
+    let sub =
+      let len = min maxlen (chars_left s pos) in
+      if is_visible s pos && is_visible s (pos + len - 1) then
+        Bytes.sub s.buffer (pos - s.buffer_pos) len
+      else if len <= s.block_overlap then
+        (perform_unsafe_seek s pos;
+         Bytes.sub s.buffer (pos - s.buffer_pos) len)
+      else
+        (let result = Bytes.create len in
+         let chars_left = ref len in
+         let chars_read = ref 0 in
+         seek_in s.input pos;
+         while !chars_left > 0 do
+           let nchars = min s.block_size !chars_left in
+           read_block s 0 nchars;
+           Bytes.blit s.buffer 0 result !chars_read nchars;
+           chars_left := !chars_left - nchars;
+           chars_read := !chars_read + nchars
+         done;
+         result)
+    in
+    Bytes.unsafe_to_string sub
 
 let match_char s pos c =
   read_char s pos = Some c
@@ -207,10 +210,10 @@ let match_string s pos str =
     if len > chars_left s pos then
       false
     else if is_visible s pos && is_visible s (pos + len - 1) then
-      String.match_sub s.buffer (pos - s.buffer_pos) str
+      Bytes.match_sub s.buffer (pos - s.buffer_pos) str
     else if len <= s.block_overlap then
       (perform_unsafe_seek s pos;
-       String.match_sub s.buffer (pos - s.buffer_pos) str)
+       Bytes.match_sub s.buffer (pos - s.buffer_pos) str)
     else
       (let result = ref true in
        let chars_left = ref len in
@@ -219,7 +222,7 @@ let match_string s pos str =
        while !chars_left > 0 do
          let nchars = min s.block_size !chars_left in
          read_block s 0 nchars;
-         if String.match_sub2 str !chars_read s.buffer 0 nchars then
+         if Bytes.match_sub2 s.buffer 0 str !chars_read nchars then
            (chars_left := !chars_left - nchars;
             chars_read := !chars_read + nchars)
          else

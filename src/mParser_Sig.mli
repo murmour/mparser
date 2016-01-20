@@ -44,8 +44,8 @@ module type Regexp = sig
       If a subpattern did not capture a substring, the empty
       string is returned in the corresponding position instead. *)
 
-  val exec: rex: t -> pos: int -> string -> substrings option
-  (** Attemts to match the string with a regular expression, starting
+  val exec: rex: t -> pos: int -> Bytes.t -> substrings option
+  (** Attemts to match the byte-buffer with a regular expression, starting
       from the position [pos]. Returns the matched substrings or [None]
       on failure. *)
 

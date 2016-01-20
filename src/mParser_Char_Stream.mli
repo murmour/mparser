@@ -38,8 +38,7 @@ type t
 
 val from_string: string -> t
 (** [from_string s] creates a character stream that contains the characters of
-    the string [s]. The string is not copied, hence subsequent modifications
-    to it are visible from the stream. *)
+    the string [s]. *)
 
 val from_channel: ?block_size:int -> ?block_overlap:int -> ?min_rspace:int -> in_channel -> t
 (** [from_channel ?block_size ?block_overlap ?min_rspace chn] creates a

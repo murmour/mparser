@@ -42,9 +42,9 @@ module Regexp: MParser_Sig.Regexp = struct
   let get_all_substrings s =
     Pcre.get_substrings s
 
-  let exec ~rex ~pos s =
+  let exec ~rex ~pos b =
     try
-      Some (Pcre.exec ~pos ~rex s)
+      Some (Pcre.exec ~pos ~rex (Bytes.unsafe_to_string b))
     with Not_found ->
       None
 

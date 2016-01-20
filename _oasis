@@ -42,6 +42,7 @@ Library mparser
   Modules: MParser, MParser_Sig, MParser_Char_Stream
   InternalModules: MParser_Utils
   FindlibName: mparser
+  BuildDepends: bytes
 
 Library mparser_pcre
   Build$: flag(pcre) || flag(all)
