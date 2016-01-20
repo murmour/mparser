@@ -66,8 +66,8 @@ parsing, taking care of the operator precedence issues:
 
 .. sourcecode:: ocaml
 
-  let infix p o =
-    Infix (p |>> (fun _ a b -> (`Binop (o, a, b))), Assoc_left)
+  let infix p op =
+    Infix (p |>> (fun _ a b -> (`Binop (op, a, b))), Assoc_left)
 
   let operators =
     [
@@ -81,8 +81,11 @@ parsing, taking care of the operator precedence issues:
       ];
     ]
 
+  let decimal =
+    many1_chars digit |>> int_of_string
+
   let expr =
-    expression operators (Tokens.decimal |>> fun i -> `Int i)
+    expression operators (decimal |>> fun i -> `Int i)
 
 
 Next, we implement an interpreter for our expression tree:
