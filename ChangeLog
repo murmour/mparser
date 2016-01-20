@@ -13,7 +13,7 @@
 	* Fix: [CharStream] was renamed to [MParser_Char_Stream] in order to
 	avoid link-time module name conflicts with other libraries.
 	* Fix (MParser_Char_Stream): Mutable strings were replaced with
-	[Bytes.t] in the implementation, as part of transition to modern OCaml.
+	[Bytes.t] in the implementation, as it should be in modern OCaml.
 
 
 2014-07-04  Max Mouratov  <mmouratov@gmail.com>
