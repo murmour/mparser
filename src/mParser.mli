@@ -130,7 +130,7 @@ val match_string: 's state -> string -> bool
     When building parsers from the parser combinators and running them using
     the [parse] functions (see below), error handling and reporting is nearly
     automatic. If a parser run fails, the [parse] functions return a
-    human-readable (plain english) error message that is generated from the
+    human-readable (plain English) error message that is generated from the
     labels attached to the parsers using the labelling operators [<?>] and
     [<??>].
 
@@ -702,13 +702,13 @@ val none_of: string -> (char, 's) t
     returns it. *)
 
 val uppercase: (char, 's) t
-(** Parses an english uppercase letter and returns it. *)
+(** Parses an English uppercase letter and returns it. *)
 
 val lowercase: (char, 's) t
-(** Parses an english lowercase letter and returns it. *)
+(** Parses an English lowercase letter and returns it. *)
 
 val letter: (char, 's) t
-(** Parses an english letter and returns it. *)
+(** Parses an English letter and returns it. *)
 
 val digit: (char, 's) t
 (** Parses a decimal digit and returns it. *)
@@ -720,7 +720,7 @@ val oct_digit: (char, 's) t
 (** Parses an octal digit and returns it. *)
 
 val alphanum: (char, 's) t
-(** Parses an english letter or a decimal digit and returns it. *)
+(** Parses an English letter or a decimal digit and returns it. *)
 
 val tab: (char, 's) t
 (** Parses a tab character (['\t']) and returns it. *)

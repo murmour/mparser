@@ -176,7 +176,7 @@ let read_string s pos maxlen =
   if not (is_valid_pos s pos) then
     ""
   else
-    let sub =
+    let sub: Bytes.t =
       let len = min maxlen (chars_left s pos) in
       if is_visible s pos && is_visible s (pos + len - 1) then
         Bytes.sub s.buffer (pos - s.buffer_pos) len

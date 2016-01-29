@@ -498,10 +498,10 @@ let attempt p s =
 
 let (<?>) p label s =
   let reply = p s in
-    if is_empty reply then
-      set_error reply (expected_error s label)
-    else
-      reply
+  if is_empty reply then
+    set_error reply (expected_error s label)
+  else
+    reply
 
 let (<??>) p label s =
   let reply = p s in

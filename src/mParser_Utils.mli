@@ -79,13 +79,13 @@ module Char: sig
   include module type of Char
 
   val is_lowercase: t -> bool
-  (** Returns [true] if the given character is an english lowercase letter. *)
+  (** Returns [true] if the given character is an English lowercase letter. *)
 
   val is_uppercase: t -> bool
-  (** Returns [true] if the given character is an english uppercase letter. *)
+  (** Returns [true] if the given character is an English uppercase letter. *)
 
   val is_letter: t -> bool
-  (** Returns [true] if the given character is an english letter. *)
+  (** Returns [true] if the given character is an English letter. *)
 
   val is_digit: t -> bool
   (** Returns [true] if the given character is a decimal digit. *)
