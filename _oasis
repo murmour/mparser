@@ -37,30 +37,30 @@ Flag re
 # Libraries
 # ------------------------------------------------------------------------------
 
-Library mparser
+Library lib_MParser
   Path: src
   Modules: MParser, MParser_Sig, MParser_Char_Stream
   InternalModules: MParser_Utils
   FindlibName: mparser
   BuildDepends: bytes
 
-Library mparser_pcre
+Library lib_MParser_PCRE
   Build$: flag(pcre) || flag(all)
   Install$: flag(pcre) || flag(all)
   Path: src
   Modules: MParser_PCRE
-  FindlibParent: mparser
+  FindlibParent: lib_MParser
   FindlibName: pcre
-  BuildDepends: mparser, pcre
+  BuildDepends: pcre
 
-Library mparser_re
+Library lib_MParser_RE
   Build$: flag(re) || flag(all)
   Install$: flag(re) || flag(all)
   Path: src
   Modules: MParser_RE
-  FindlibParent: mparser
+  FindlibParent: lib_MParser
   FindlibName: re
-  BuildDepends: mparser, re.perl
+  BuildDepends: re.perl
 
 
 # Misc
