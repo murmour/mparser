@@ -569,7 +569,8 @@ let many_fold_apply f a g p =
       | Empty_failed e1 ->
           make_ok consumed (g a) s (merge_errors e1 e)
       | Empty_ok _ ->
-          failwith "MParser.many_fold_apply: parser accepts the empty string"
+          failwith "MParser: the \"many\" combinator is applied to \
+                    a parser that accepts an empty string"
   in
   fun s -> loop false a s No_error
 
