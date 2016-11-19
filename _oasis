@@ -10,7 +10,7 @@ BuildTools: ocamlbuild
 Homepage: https://github.com/cakeplus/mparser
 OASISFormat: 0.4
 OCamlVersion: >= 3.12
-AlphaFeatures: pure_interface
+AlphaFeatures: pure_interface, ocamlbuild_more_args
 
 Description:
   This library implements a rather complete and efficient monadic
@@ -65,6 +65,14 @@ Library lib_MParser_RE
 
 # Misc
 # ------------------------------------------------------------------------------
+
+Document "API"
+  Type: ocamlbuild (0.4)
+  BuildTools: ocamldoc
+  Title: API reference for MParser
+  XOCamlbuildPath: .
+  XOCamlbuildExtraArgs: "-docflags '-colorize-code -short-functors'"
+  XOCamlbuildLibraries: mparser, mparser.pcre, mparser.re
 
 SourceRepository this
   Type: git
