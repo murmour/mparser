@@ -129,12 +129,12 @@ let perform_unsafe_seek s pos =
   let offset = new_buffer_pos - s.buffer_pos in
   if offset > 0 && offset < s.block_size then
     let overlap = s.block_size - offset in
-    Bytes.blit s.buffer (s.block_size - overlap) s.buffer 0 overlap;
+    Bytes.unsafe_blit s.buffer (s.block_size - overlap) s.buffer 0 overlap;
     seek_in s.input (new_buffer_pos + overlap);
     read_block s overlap (s.block_size - overlap)
   else if offset < 0 && -offset < s.block_size then
     let overlap = s.block_size + offset in
-    Bytes.blit s.buffer 0 s.buffer (s.block_size - overlap) overlap;
+    Bytes.unsafe_blit s.buffer 0 s.buffer (s.block_size - overlap) overlap;
     seek_in s.input new_buffer_pos;
     read_block s 0 (s.block_size - overlap)
   else
@@ -191,7 +191,7 @@ let read_string s pos maxlen =
          while !chars_left > 0 do
            let nchars = min s.block_size !chars_left in
            read_block s 0 nchars;
-           Bytes.blit s.buffer 0 result !chars_read nchars;
+           Bytes.unsafe_blit s.buffer 0 result !chars_read nchars;
            chars_left := !chars_left - nchars;
            chars_read := !chars_read + nchars
          done;
