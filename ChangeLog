@@ -1,3 +1,14 @@
+2016-11-19  Max Mouratov  <mmouratov@gmail.com>
+
+	Version 1.2.1
+
+	* New: OASIS is set up to produce API reference (in HTML).
+	* Fix: The library file names were made distinct from the corresponding
+	module names, as name conflicts made OASIS confused on Windows.
+	* Fix: A couple of implementation tweaks were added that should provide
+	a minor performance boost.
+
+
 2016-01-20  Max Mouratov  <mmouratov@gmail.com>
 
 	Version 1.2
