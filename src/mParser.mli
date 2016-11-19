@@ -15,14 +15,12 @@
 
      See the GNU Library General Public License version 2.1 for more details
      (enclosed in the file LICENSE.txt).
-
-   Module MParser:
-     The parser combinator library.
 *)
 
-(** The [MParser] module is a monadic parser combinator library. The parser
-    combinators provided by this module can be used to build parsers for
-    context-sensitive, infinite look-ahead grammars that are reasonably
+(** A monadic parser combinator library. *)
+
+(** The parser combinators provided by this module can be used to build parsers
+    for context-sensitive, infinite look-ahead grammars that are reasonably
     efficient and produce good error messages due to a controlled use of
     backtracking. The performance of the resulting parsers should be
     sufficient for most applications. The parsers get their input from

@@ -15,9 +15,6 @@
 
      See the GNU Library General Public License version 2.1 for more details
      (enclosed in the file LICENSE.txt).
-
-   Module MParser:
-     The parser combinator library.
 *)
 
 (** For an introduction to monadic parser combinators see the following paper:

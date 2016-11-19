@@ -15,10 +15,10 @@
 
      See the GNU Library General Public License version 2.1 for more details
      (enclosed in the file LICENSE.txt).
+*)
 
-   Module MParser_RE:
-     RE-based regular expression parsers.
-     The used syntax is re.perl (the one most similar to PCRE).
+(** RE-based regular expression parsers.
+    The used syntax is re.perl (the one most similar to PCRE).
 *)
 
 

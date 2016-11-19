@@ -15,10 +15,9 @@
 
      See the GNU Library General Public License version 2.1 for more details
      (enclosed in the file LICENSE.txt).
-
-   Module MParser_Utils:
-     General purpose functions.
 *)
+
+(** General purpose utilities. *)
 
 
 val ( |> ): 'a -> ('a -> 'b) -> 'b

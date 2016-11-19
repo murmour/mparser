@@ -15,10 +15,9 @@
 
      See the GNU Library General Public License version 2.1 for more details
      (enclosed in the file LICENSE.txt).
-
-   Module MParser_PCRE:
-     PCRE-based regular expression parsers.
 *)
+
+(** PCRE-based regular expression parsers. *)
 
 
 module Regexp: MParser_Sig.Regexp

@@ -15,14 +15,14 @@
 
      See the GNU Library General Public License version 2.1 for more details
      (enclosed in the file LICENSE.txt).
-
-   Module MParser_Sig:
-     Common module signatures.
 *)
 
+(** Common module signatures. *)
 
-(** A pluggable regular expression engine. *)
+
 module type Regexp = sig
+  (** A pluggable regular expression engine. *)
+
 
   type t
   (** A compiled regular expression. *)

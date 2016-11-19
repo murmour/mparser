@@ -15,15 +15,13 @@
 
      See the GNU Library General Public License version 2.1 for more details
      (enclosed in the file LICENSE.txt).
-
-   Module MParser_Char_Stream:
-     Character streams.
 *)
 
-(** The [MParser_Char_Stream] module provides a position-based interface to
-    character streams. The streams are optimized for applications that mostly
-    read a stream sequentially and occasionally backtrack over a bounded
-    distance, which is a common usage pattern of backtracking parsers.
+(** A position-based interface to character streams. *)
+
+(** The streams are optimized for applications that mostly read a stream
+    sequentially and occasionally backtrack over a bounded distance, which is
+    a common usage pattern of backtracking parsers.
 
     The characters in a character stream provided by this module are accessed
     based on their position in the stream. A position [pos] is valid in the
