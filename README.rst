@@ -40,6 +40,7 @@ Installing
 
 3. Run ``ocaml setup.ml -build``.
 4. Run ``ocaml setup.ml -install``.
+5. Optionally, run ``ocaml setup.ml -doc`` to produce an HTML API reference.
 
 
 Uninstalling
