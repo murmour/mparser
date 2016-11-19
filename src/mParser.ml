@@ -390,17 +390,15 @@ let zero s =
 
 let bind p f s =
   match p s with
-    | Empty_failed e1 ->
-        Empty_failed e1
-    | Consumed_failed e1 ->
-        Consumed_failed e1
+    | (Empty_failed _ | Consumed_failed _) as failed ->
+        failed
     | Empty_ok (r1, s1, e1) ->
         (match f r1 s1 with
           | Empty_failed e2 ->
               Empty_failed (merge_errors e2 e1)
           | Empty_ok (r2, s2, e2) ->
               Empty_ok (r2, s2, merge_errors e2 e1)
-          | consumed ->
+          | (Consumed_ok _ | Consumed_failed _) as consumed ->
               consumed)
     | Consumed_ok (r1, s1, e1) ->
         (match f r1 s1 with
@@ -408,7 +406,7 @@ let bind p f s =
               Consumed_failed (merge_errors e2 e1)
           | Empty_ok (r2, s2, e2) ->
               Consumed_ok (r2, s2, merge_errors e2 e1)
-          | consumed ->
+          | (Consumed_ok _ | Consumed_failed _) as consumed ->
               consumed)
 
 let (>>=) = bind
@@ -428,17 +426,15 @@ let (>>$) p x =
 
 let (>>?) p q s =
   match p s with
-    | Empty_failed e1 ->
-        Empty_failed e1
-    | Consumed_failed e1 ->
-        Consumed_failed e1
+    | (Empty_failed _ | Consumed_failed _) as failed ->
+        failed
     | Empty_ok (_, s1, e1) ->
         (match q s1 with
           | Empty_failed e2 ->
               Empty_failed (merge_errors e2 e1)
           | Empty_ok (r2, s2, e2) ->
               Empty_ok (r2, s2, merge_errors e2 e1)
-          | consumed ->
+          | (Consumed_ok _ | Consumed_failed _) as consumed ->
               consumed)
     | Consumed_ok (_, s1, e1) ->
         (match q s1 with
@@ -446,7 +442,7 @@ let (>>?) p q s =
               Empty_failed (backtrack_error s (merge_errors e2 e1))
           | Empty_ok (r2, s2, e2) ->
               Consumed_ok (r2, s2, merge_errors e2 e1)
-          | consumed ->
+          | (Consumed_ok _ | Consumed_failed _) as consumed ->
               consumed)
 
 let (|>>) p f =
@@ -478,7 +474,7 @@ let (<|>) p1 p2 s =
               Empty_failed (merge_errors e2 e1)
           | Empty_ok (r2, s2, e2) ->
               Empty_ok (r2, s2, (merge_errors e2 e1))
-          | consumed ->
+          | (Consumed_ok _ | Consumed_failed _) as consumed ->
               consumed)
     | other ->
         other
@@ -638,21 +634,18 @@ let chain_right p op x =
   chain_right1 p op <|>$ x
 
 let count n p =
-  let rec loop consumed n l s e =
-    if n > 0 then
-      match p s with
-        | Empty_ok (r, s1, e1) ->
-            loop consumed (n - 1) (r :: l) s1 (merge_errors e1 e)
-        | Consumed_ok (r, s1, e1) ->
-            loop true (n - 1) (r :: l) s1 e1
-        | Empty_failed e1 ->
-            make_failed consumed (merge_errors e1 e)
-        | Consumed_failed e1 ->
-            Consumed_failed e1
-    else if consumed then
-      Consumed_ok (List.rev l, s, e)
-    else
-      Empty_ok (List.rev l, s, e)
+  let rec loop consumed n acc s e =
+    if n <= 0 then
+      make_ok consumed (List.rev acc) s e
+    else match p s with
+      | Empty_ok (r, s1, e1) ->
+          loop consumed (n - 1) (r :: acc) s1 (merge_errors e1 e)
+      | Consumed_ok (r, s1, e1) ->
+          loop true (n - 1) (r :: acc) s1 e1
+      | Empty_failed e1 ->
+          make_failed consumed (merge_errors e1 e)
+      | (Consumed_failed _) as failed ->
+          failed
   in
   fun s -> loop false n [] s No_error
 
@@ -667,8 +660,8 @@ let skip_count n p =
             loop true (n - 1) s1 e1
         | Empty_failed e1 ->
             make_failed consumed (merge_errors e1 e)
-        | Consumed_failed e1 ->
-            Consumed_failed e1
+        | (Consumed_failed _) as failed ->
+            failed
   in
   fun s -> loop false n s No_error
 
