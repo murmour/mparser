@@ -51,7 +51,7 @@ Library lib_MParser_PCRE
   Modules: MParser_PCRE
   FindlibParent: lib_MParser
   FindlibName: pcre
-  BuildDepends: pcre
+  BuildDepends: mparser, pcre
 
 Library lib_MParser_RE
   Build$: flag(re) || flag(all)
@@ -60,7 +60,7 @@ Library lib_MParser_RE
   Modules: MParser_RE
   FindlibParent: lib_MParser
   FindlibName: re
-  BuildDepends: re.perl
+  BuildDepends: mparser, re.perl
 
 
 # Misc
