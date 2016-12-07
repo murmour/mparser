@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 0f8c1db85bfee6d76f8e6247ae2a0259)
+# DO NOT EDIT (digest: 1a356f919c51247718afcd22413543e9)
 version = "1.2.1"
 description = "A simple monadic parser combinator library"
 requires = "bytes"
@@ -11,7 +11,7 @@ exists_if = "lib_MParser.cma"
 package "re" (
  version = "1.2.1"
  description = "A simple monadic parser combinator library"
- requires = "re.perl"
+ requires = "mparser re.perl"
  archive(byte) = "lib_MParser_RE.cma"
  archive(byte, plugin) = "lib_MParser_RE.cma"
  archive(native) = "lib_MParser_RE.cmxa"
@@ -22,7 +22,7 @@ package "re" (
 package "pcre" (
  version = "1.2.1"
  description = "A simple monadic parser combinator library"
- requires = "pcre"
+ requires = "mparser pcre"
  archive(byte) = "lib_MParser_PCRE.cma"
  archive(byte, plugin) = "lib_MParser_PCRE.cma"
  archive(native) = "lib_MParser_PCRE.cmxa"

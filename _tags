@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 69ab99b4df01ae30e67b9bb8d988e50d)
+# DO NOT EDIT (digest: 4638143df843647e60d0c0e92cc0c92a)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -16,11 +16,12 @@ true: annot, bin_annot
 "_darcs": not_hygienic
 # Library lib_MParser
 "src/lib_MParser.cmxs": use_lib_MParser
-<src/*.ml{,i,y}>: pkg_bytes
 # Library lib_MParser_PCRE
 "src/lib_MParser_PCRE.cmxs": use_lib_MParser_PCRE
 <src/*.ml{,i,y}>: pkg_pcre
 # Library lib_MParser_RE
 "src/lib_MParser_RE.cmxs": use_lib_MParser_RE
+<src/*.ml{,i,y}>: pkg_bytes
 <src/*.ml{,i,y}>: pkg_re.perl
+<src/*.ml{,i,y}>: use_lib_MParser
 # OASIS_STOP
