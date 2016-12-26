@@ -183,14 +183,12 @@ let read_string s pos maxlen =
       else
         (let result = Bytes.create len in
          let chars_left = ref len in
-         let chars_read = ref 0 in
          seek_in s.input pos;
          while !chars_left > 0 do
            let nchars = min s.block_size !chars_left in
            read_block s 0 nchars;
-           Bytes.unsafe_blit s.buffer 0 result !chars_read nchars;
+           Bytes.unsafe_blit s.buffer 0 result (len - !chars_left) nchars;
            chars_left := !chars_left - nchars;
-           chars_read := !chars_read + nchars
          done;
          result)
     in
@@ -214,14 +212,12 @@ let match_string s pos str =
     else
       (let result = ref true in
        let chars_left = ref len in
-       let chars_read = ref 0 in
        seek_in s.input pos;
        while !chars_left > 0 do
          let nchars = min s.block_size !chars_left in
          read_block s 0 nchars;
-         if Bytes.match_sub2 s.buffer 0 str !chars_read nchars then
-           (chars_left := !chars_left - nchars;
-            chars_read := !chars_read + nchars)
+         if Bytes.match_sub2 s.buffer 0 str (len - !chars_left) nchars then
+           chars_left := !chars_left - nchars
          else
            (result := false;
             chars_left := 0)

@@ -1121,8 +1121,8 @@ module MakeRegexp (Regexp: MParser_Sig.Regexp) = struct
   module CharStreamRx = MParser_Char_Stream.MakeRegexp (Regexp)
 
 
-  let match_regexp s rex =
-    CharStreamRx.match_regexp s.input s.index rex
+  let match_regexp s r =
+    CharStreamRx.match_regexp s.input s.index r
 
   let make_regexp pat =
     Regexp.make pat
@@ -1132,15 +1132,15 @@ module MakeRegexp (Regexp: MParser_Sig.Regexp) = struct
       | None ->
           zero s
       | Some substrings ->
-          (match Regexp.get_substring substrings 0 with
+          match Regexp.get_substring substrings 0 with
+            | None ->
+                zero s
             | Some result ->
                 let n = String.length result in
                 if n > 0 then
                   Consumed_ok (result, advance_state s n, No_error)
                 else
                   Empty_ok (result, s, No_error)
-            | None ->
-                zero s)
 
   let regexp_substrings r s =
     match match_regexp s r with
