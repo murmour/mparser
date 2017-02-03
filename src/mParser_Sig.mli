@@ -2,7 +2,7 @@
 (* MParser, a simple monadic parser combinator library
    -----------------------------------------------------------------------------
    Copyright (C) 2008, Holger Arnold
-                 2014-2016, Max Mouratov
+                 2014-2017, Max Mouratov
 
    License:
      This library is free software; you can redistribute it and/or
