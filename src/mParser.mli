@@ -64,7 +64,7 @@ type 's state
 
 
 val init: MParser_Char_Stream.t -> 's -> 's state
-(** [init input user] returns an initial parser state using the input string
+(** [init input user] returns an initial parser state using the input stream
     [input] and the initial user state [user]. *)
 
 val is_eof: 's state -> bool
@@ -115,7 +115,7 @@ val read_string: 's state -> int -> string
     is not a valid position, the empty string is returned. *)
 
 val match_char: 's state -> char -> bool
-(** [match_char s c] returns [true] if [c] ist the char at the current
+(** [match_char s c] returns [true] if [c] is the char at the current
     position, and [false] otherwise. *)
 
 val match_string: 's state -> string -> bool
@@ -136,9 +136,8 @@ val match_string: 's state -> string -> bool
     errors in parsers and for customizing the handling of errors returned by
     parser runs. For this purpose the [parse] functions also return the
     actual [error] value in the case of a failed parser run. Typical
-    applications for a customized of error handling are the
-    internationalization of error messages and the automatic processing of
-    parse errors. *)
+    applications for customized error handling are the internationalization of
+    error messages and the automatic processing of parse errors. *)
 
 type pos = int * int * int
 (** An input position, consisting of an index into the input, a line number,
@@ -150,8 +149,7 @@ type error_message =
   | Expected_error of string
     (** A symbol that was expected in the input could not be parsed. *)
   | Message_error of string
-    (** An error occurred that does not fit into one of the other
-        categories. *)
+    (** An error occurred that does not fit into any other category. *)
   | Compound_error of string * error
     (** An error occurred while parsing a part of a compound. *)
   | Backtrack_error of error
@@ -160,10 +158,10 @@ type error_message =
     (** An unknown error occurred. *)
 (** The type of error messages returned by parsers. *)
 
-(** The type of errors returned by parsers. *)
 and error =
   | Parse_error of pos * error_message list
   | No_error
+(** The type of errors returned by parsers. *)
 
 
 val unexpected_error: 's state -> string -> error
@@ -273,16 +271,18 @@ type 'a result =
 
 
 val parse: ('a, 's) t -> MParser_Char_Stream.t -> 's -> 'a result
-(** [parse p input user] runs the parser [p] on the input [input] using the
+(** [parse p s user] runs the parser [p] on the input stream [s] using the
     initial user state [user]. *)
 
 val parse_string: ('a, 's) t -> string -> 's -> 'a result
-(** [parse_string p str user] runs the parser [p] on the string [str] using
-    the initial user state [user]. *)
+(** [parse_string p str user] runs the parser [p] on the input stream produced
+    from the string [str] using the initial user state [user]. The stream is
+    created with [MParser_Char_Stream.from_string]. *)
 
 val parse_channel: ('a, 's) t -> in_channel -> 's -> 'a result
-(** [parse_string p chn user] runs the parser [p] on the input channel [chn]
-    using the initial user state [user]. *)
+(** [parse_string p chn user] runs the parser [p] on the input stream produced
+    from the channel [chn] using the initial user state [user]. The stream is
+    created with [MParser_Char_Stream.from_channel]. *)
 
 
 (** {2 Parser combinators}
@@ -304,10 +304,12 @@ val try_return: ('a -> 'b) -> 'a -> string -> 's state -> ('b, 's) t
     is useful where a result must be computed from another parser result and
     where this computation may raise an exception. *)
 
-val try_return2: ('a -> 'b -> 'c) -> 'a -> 'b -> string -> 's state -> ('c, 's) t
+val try_return2: ('a -> 'b -> 'c) -> 'a -> 'b -> string -> 's state ->
+  ('c, 's) t
 (** A variant of [try_return] for functions with two parameters. *)
 
-val try_return3: ('a -> 'b -> 'c -> 'd) -> 'a -> 'b -> 'c -> string -> 's state -> ('d, 's) t
+val try_return3: ('a -> 'b -> 'c -> 'd) -> 'a -> 'b -> 'c -> string ->
+  's state -> ('d, 's) t
 (** A variant of [try_return] for functions with three parameters. *)
 
 val fail: string -> ('a, 's) t
@@ -358,10 +360,12 @@ val (|>>): ('a, 's) t -> ('a -> 'b) -> ('b, 's) t
 val pipe2: ('a, 's) t -> ('b, 's) t -> ('a -> 'b -> 'c) -> ('c, 's) t
 (** A variant of [(|>>)] for functions with two parameters. *)
 
-val pipe3: ('a, 's) t -> ('b, 's) t -> ('c, 's) t -> ('a -> 'b -> 'c -> 'd) -> ('d, 's) t
+val pipe3: ('a, 's) t -> ('b, 's) t -> ('c, 's) t ->
+  ('a -> 'b -> 'c -> 'd) -> ('d, 's) t
 (** A variant of [(|>>)] for functions with three parameters. *)
 
-val pipe4: ('a, 's) t -> ('b, 's) t -> ('c, 's) t -> ('d, 's) t -> ('a -> 'b -> 'c -> 'd -> 'e) -> ('e, 's) t
+val pipe4: ('a, 's) t -> ('b, 's) t -> ('c, 's) t -> ('d, 's) t ->
+  ('a -> 'b -> 'c -> 'd -> 'e) -> ('e, 's) t
 (** A variant of [(|>>)] for functions with four parameters. *)
 
 val (<|>): ('a, 's) t -> ('a, 's) t -> ('a, 's) t
@@ -424,44 +428,60 @@ val many: ('a, 's) t -> ('a list, 's) t
 (** [many p] parses zero or more occurrences of [p] and returns a list of the
     results returned by [p].
 
-    @raise Failure if [p] accepts the empty string. *)
+    @raise Failure if [p] doesn't accept any input. *)
 
 val many1: ('a, 's) t -> ('a list, 's) t
 (** [many1 p] parses one or more occurrences of [p] and returns a list of the
     results returned by [p].
 
-    @raise Failure if [p] accepts the empty string. *)
+    @raise Failure if [p] doesn't accept any input. *)
 
 val many_rev: ('a, 's) t -> ('a list, 's) t
-(** [many_rev p] is equivalent to [many p |>> List.rev]. *)
+(** [many_rev p] is equivalent to [many p |>> List.rev].
+
+    @raise Failure if [p] doesn't accept any input. *)
 
 val many1_rev: ('a, 's) t -> ('a list, 's) t
-(** [many1_rev p] is equivalent to [many1 p |>> List.rev]. *)
+(** [many1_rev p] is equivalent to [many1 p |>> List.rev].
+
+    @raise Failure if [p] doesn't accept any input. *)
 
 val skip: ('a, 's) t -> (unit, 's) t
 (** [skip p] is equivalent to [p |>> ignore]. *)
 
 val skip_many: ('a, 's) t -> (unit, 's) t
-(** [skip_many p] is equivalent to [many p |>> ignore]. *)
+(** [skip_many p] is equivalent to [skip (many p)].
+
+    @raise Failure if [p] doesn't accept any input. *)
 
 val skip_many1: ('a, 's) t -> (unit, 's) t
-(** [skip_many1 p] is equivalent to [many1 p |>> ignore]. *)
+(** [skip_many1 p] is equivalent to [skip (many1 p)].
+
+    @raise Failure if [p] doesn't accept any input. *)
 
 val many_fold_left: ('a -> 'b -> 'a) -> 'a -> ('b, 's) t -> ('a, 's) t
-(** [many_fold_left f a p] is equivalent to [many p |>> List.fold_left f
-    a]. *)
+(** [many_fold_left f a p] is equivalent to
+    [many p |>> List.fold_left f a].
+
+    @raise Failure if [p] doesn't accept any input. *)
 
 val many1_fold_left: ('a -> 'b -> 'a) -> 'a -> ('b, 's) t -> ('a, 's) t
-(** [many1_fold_left f a p] is equivalent to [many1 p |>> List.fold_left f
-    a]. *)
+(** [many1_fold_left f a p] is equivalent to
+    [many1 p |>> List.fold_left f a].
+
+    @raise Failure if [p] doesn't accept any input. *)
 
 val many_rev_fold_left: ('a -> 'b -> 'a) -> 'a -> ('b, 's) t -> ('a, 's) t
-(** [many_rev_fold_left f a p] is equivalent to [many p |>> List.rev |>>
-    List.fold_left f a]. *)
+(** [many_rev_fold_left f a p] is equivalent to
+    [many p |>> List.rev |>> List.fold_left f a].
+
+    @raise Failure if [p] doesn't accept any input. *)
 
 val many1_rev_fold_left: ('a -> 'b -> 'a) -> 'a -> ('b, 's) t -> ('a, 's) t
-(** [many1_rev_fold_left f a p] is equivalent to [many1 p |>> List.rev |>>
-    List.fold_left f a]. *)
+(** [many1_rev_fold_left f a p] is equivalent to
+    [many1 p |>> List.rev |>> List.fold_left f a].
+
+    @raise Failure if [p] doesn't accept any input. *)
 
 val chain_left: ('a, 's) t -> ('a -> 'a -> 'a, 's) t -> 'a -> ('a, 's) t
 (** [chain_left p op x] parses zero or more occurrences of [p], separated by
@@ -490,8 +510,7 @@ val count: int -> ('a, 's) t -> ('a list, 's) t
     the results returned by [p]. *)
 
 val skip_count: int -> ('a, 's) t -> (unit, 's) t
-(** [skip_count n p] parses exactly [n] occurrences of [p] and returns
-    [()]. *)
+(** [skip_count n p] is equivalent to [skip (count n p)]. *)
 
 val between: ('a, 's) t -> ('b, 's) t -> ('c, 's) t -> ('c, 's) t
 (** [between left right p] is equivalent to [left >> p << right]. *)
@@ -529,10 +548,7 @@ val many_until: ('a, 's) t -> ('b, 's) t -> ('a list, 's) t
     and should therefore not have side effects. *)
 
 val skip_many_until: ('a, 's) t -> ('b, 's) t -> (unit, 's) t
-(** [skip_many_until p q] parses zero or more occurrences of [p] until [q]
-    succeeds and returns [()]. It is equivalent to [skip_many
-    (not_followed_by q "" >> p) << q]. Note that [q] is parsed twice and
-    should therefore not have side effects. *)
+(** [skip_many_until p q] is equivalent to [skip (many_until p q)]. *)
 
 
 (** {2 Parsers accessing the parser state} *)
@@ -578,16 +594,17 @@ val update_user_state: ('s -> 's) -> (unit, 's) t
     parsers only consume input when they succeed. *)
 
 val skip_nchars: int -> (unit, 's) t
-(** [skip_nchars n] skips [n] characters of the input. Newlines are not registered.
-    This parser never fails, even if there are less than [n] characters left.
+(** [skip_nchars n] skips [n] characters of the input. Newlines are not
+    registered. This parser never fails, even if there are less than [n]
+    characters left.
 
     @raise Invalid_argument if [n < 0]. *)
 
 val char: char -> (char, 's) t
-(** [char c] parses the character [c]. *)
+(** [char c] parses the character [c] and returns it. *)
 
 val skip_char: char -> (unit, 's) t
-(** [skip_char c] parses the character [c] and returns [()]. *)
+(** [skip_char c] is equivalent to [skip (char c)]. *)
 
 val any_char: (char, 's) t
 (** Parses any character and returns it. This parser does not register
@@ -595,15 +612,13 @@ val any_char: (char, 's) t
     newline. *)
 
 val skip_any_char: (unit, 's) t
-(** Parses any character and returns [()]. This parser does not register
-    newlines. Use [any_char_or_nl] if the current character can be a
-    newline. *)
+(** [skip_any_char] is equivalent to [skip any_char]. *)
 
 val any_char_or_nl: (char, 's) t
 (** [any_char_or_nl] is equivalent to [newline <|> any_char]. *)
 
 val skip_any_char_or_nl: (unit, 's) t
-(** [skip_any_char_or_nl] is equivalent to [newline <|> skip_any_char]. *)
+(** [skip_any_char_or_nl] is equivalent to [skip any_char_or_nl]. *)
 
 val peek_char: (char, 's) t
 (** Returns the character at the position after the current position or fails
@@ -613,7 +628,7 @@ val string: string -> (string, 's) t
 (** [string s] parses the string [s] and returns it. *)
 
 val skip_string: string -> (unit, 's) t
-(** [skip_string s] parses the string [s] and returns [()]. *)
+(** [skip_string s] is equivalent to [skip (string s)]. *)
 
 val any_string: int -> (string, 's) t
 (** [any_string n] parses any string of [n] characters and returns it. Fails
@@ -623,19 +638,19 @@ val many_chars: (char, 's) t -> (string, 's) t
 (** [many_chars p] parses zero or more occurrences of [p] and returns a string
     of the results returned by [p].
 
-    @raise Failure if [p] accepts the empty string. *)
+    @raise Failure if [p] doesn't accept any input. *)
 
 val many1_chars: (char, 's) t -> (string, 's) t
 (** [many1_chars p] parses one or more occurrences of [p] and returns a string
     of the results returned by [p].
 
-    @raise Failure if [p] accepts the empty string. *)
+    @raise Failure if [p] doesn't accept any input. *)
 
 val skip_many_chars: (char, 's) t -> (unit, 's) t
-(** [skip_many_chars p] is equivalent to [many_chars p |>> ignore]. *)
+(** [skip_many_chars p] is equivalent to [skip (many_chars p)]. *)
 
 val skip_many1_chars: (char, 's) t -> (unit, 's) t
-(** [skip_many1_chars p] is equivalent to [many_chars p |>> ignore]. *)
+(** [skip_many1_chars p] is equivalent to [skip (many1_chars p)]. *)
 
 val many_chars_until: (char, 's) t -> (char, 's) t -> (string, 's) t
 (** [many_chars_until p q] parses zero or more occurrences of [p] until [q]
@@ -644,25 +659,22 @@ val many_chars_until: (char, 's) t -> (char, 's) t -> (string, 's) t
     [q] is parsed twice and should therefore not have side effects. *)
 
 val skip_many_chars_until: (char, 's) t -> (char, 's) t -> (unit, 's) t
-(** [skip_many_until p q] parses zero or more occurrences of [p] until [q]
-    succeeds and returns [()]. It is equivalent to [skip_many
-    (not_followed_by q "" >> p) << q]. Note that [q] is parsed twice and
-    should therefore not have side effects. *)
+(** [skip_many_chars_until p q] is equivalent to
+    [skip (many_chars_until p q)]. *)
 
 val satisfy: (char -> bool) -> (char, 's) t
 (** [satisfy p] parses a character for which [p] returns [true] and returns
-    the character. It fails with an [Unknown_error] if the character at the
+    this character. It fails with an [Unknown_error] if the character at the
     current position does not satisfy [p]. *)
 
 val satisfy_l: (char -> bool) -> string -> (char, 's) t
 (** [satisfy_l p label] is equivalent to [satisfy p <?> label]. *)
 
 val skip_satisfy: (char -> bool) -> (unit, 's) t
-(** [skip_satisfy p] is equivalent to [satisfy |>> ignore]. *)
+(** [skip_satisfy p] is equivalent to [skip (satisfy p)]. *)
 
 val skip_satisfy_l: (char -> bool) -> string -> (unit, 's) t
-(** [skip_satisfy_l p label] is equivalent to [satisfy_l p label |>>
-    ignore]. *)
+(** [skip_satisfy_l p label] is equivalent to [skip (satisfy_l p label)]. *)
 
 val nsatisfy: int -> (char -> bool) -> (string, 's) t
 (** [nsatisfy n p] parses the next [n] characters if [p] returns [true] for
@@ -872,7 +884,7 @@ module MakeRegexp (Regexp: MParser_Sig.Regexp): sig
     (** [symbol sym] parses the literal string [sym] and returns it. *)
 
     val skip_symbol: string -> (unit, 's) t
-    (** [skip_symbol sym] parses the literal string [sym] and returns [()]. *)
+    (** [skip_symbol sym] is equivalent to [skip (symbol sym)]. *)
 
     val parens: ('a, 's) t -> ('a, 's) t
     (** [parens p] parses [p] between parentheses ['('] and [')']. *)
