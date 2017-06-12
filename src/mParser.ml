@@ -516,8 +516,8 @@ let look_ahead p s =
   match p s with
     | Empty_ok (r, _, _) | Consumed_ok (r, _, _) ->
         Empty_ok (r, s, No_error)
-    | Empty_failed e ->
-        Empty_failed e
+    | (Empty_failed e) as err ->
+        err
     | Consumed_failed e ->
         Empty_failed (backtrack_error s e)
 
@@ -557,8 +557,8 @@ let many_fold_apply f a g p =
     match p s with
       | Consumed_ok (r, s1, e1) ->
           loop true (f a r) s1 e1
-      | Consumed_failed e1 ->
-          Consumed_failed e1
+      | (Consumed_failed e1) as err ->
+          err
       | Empty_failed e1 ->
           make_ok consumed (g a) s (merge_errors e1 e)
       | Empty_ok _ ->
