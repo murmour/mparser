@@ -753,6 +753,9 @@ val space: (char, 's) t
     correctly updates the position in the parser state. Otherwise it returns
     the parsed character. *)
 
+val non_space: (char, 's) t
+(** [non_space] is equivalent to [is_not space], with a better error message. *)
+
 val spaces: (unit, 's) t
 (** [spaces] is equivalent to [skip_many_chars space]. *)
 

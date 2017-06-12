@@ -1008,6 +1008,13 @@ let space s =
     | _ ->
         Empty_failed (expected_error s "whitespace")
 
+let non_space s =
+  match read_char s with
+    | None | Some (' ' | '\t' | '\r' | '\n') ->
+        Empty_failed (expected_error s "not whitespace")
+    | Some c ->
+        Consumed_ok (c, advance_state s 1, No_error)
+
 let spaces s =
   let lines = ref 0 in
   let line_begin = ref 0 in
