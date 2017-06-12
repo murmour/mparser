@@ -43,7 +43,6 @@ open MParser_Utils
 type 's state =
   {
     input: MParser_Char_Stream.t;
-    length: int;
     index: int;
     line: int;
     line_begin: int;
@@ -54,7 +53,6 @@ type 's state =
 let init input user =
   {
     input;
-    length = MParser_Char_Stream.length input;
     index = 0;
     line = 1;
     line_begin = 0;
@@ -62,7 +60,7 @@ let init input user =
   }
 
 let is_valid_index s =
-  s.index >= 0 && s.index < s.length
+  s.index >= 0 && s.index < MParser_Char_Stream.length s.input
 
 let is_eof s =
   not (is_valid_index s)
