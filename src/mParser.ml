@@ -168,7 +168,7 @@ let error_line input pos width indent =
       | None | Some '\n' | Some '\r' ->
           i
       | _ ->
-          find_nl (i + 1) stop
+          find_nl (i+1) stop
   in
   let space = width - indent in
   if space <= 10 then
@@ -219,7 +219,7 @@ let rec error_message input pos messages width indent =
            | Backtrack_error (Parse_error (pos1, msg1)) ->
                (u, e, m, c, (pos1, msg1) :: b, k)
            | Unknown_error ->
-               (u, e, m, c, b, (k + 1))
+               (u, e, m, c, b, k+1)
            | _ ->
                msgs)
       ([], [], [], [], [], 0) messages
@@ -470,7 +470,7 @@ let (<|>) p1 p2 s =
           | Empty_failed e2 ->
               Empty_failed (merge_errors e2 e1)
           | Empty_ok (r2, s2, e2) ->
-              Empty_ok (r2, s2, (merge_errors e2 e1))
+              Empty_ok (r2, s2, merge_errors e2 e1)
           | (Consumed_ok _ | Consumed_failed _) as consumed ->
               consumed)
     | other ->
@@ -892,7 +892,7 @@ let many_satisfy_loop p =
   let rec loop i s =
     match read_index s i with
       | Some c when p c ->
-          loop (i + 1) s
+          loop (i+1) s
       | _ ->
           i - s.index
   in
@@ -947,31 +947,40 @@ let none_of str =
   satisfy (fun x -> not (String.contains str x))
 
 let uppercase s =
-  satisfy_l Char.is_uppercase "uppercase letter" s
+  satisfy_l (function 'A'..'Z' -> true | _ -> false)
+    "uppercase letter" s
 
 let lowercase s =
-  satisfy_l Char.is_lowercase "lowercase letter" s
+  satisfy_l (function 'a'..'z' -> true | _ -> false)
+    "lowercase letter" s
 
 let letter s =
-  satisfy_l Char.is_letter "letter" s
+  satisfy_l (function 'a'..'z' | 'A'..'Z' -> true | _ -> false)
+    "letter" s
 
 let digit s =
-  satisfy_l Char.is_digit "digit" s
+  satisfy_l (function '0'..'9' -> true | _ -> false)
+    "digit" s
 
 let hex_digit s =
-  satisfy_l Char.is_hex_digit "hex digit" s
+  satisfy_l (function 'a'..'f' | 'A'..'F' | '0'..'9' -> true | _ -> false)
+    "hex digit" s
 
 let oct_digit s =
-  satisfy_l Char.is_oct_digit "octal digit" s
+  satisfy_l (function '0'..'9' -> true | _ -> false)
+    "oct digit" s
 
 let alphanum s =
-  satisfy_l Char.is_alphanum "letter or digit" s
+  satisfy_l (function 'a'..'z' | 'A'..'Z' | '0'..'9' -> true | _ -> false)
+    "letter or digit" s
 
 let tab s =
-  satisfy_l (fun c -> c = '\t') "tab" s
+  satisfy_l (fun c -> c = '\t')
+    "tab" s
 
 let blank s =
-  satisfy_l Char.is_blank "space or tab" s
+  satisfy_l (function '\t' | ' ' -> true | _ -> false)
+    "space or tab" s
 
 let newline s =
   match read_char s with
@@ -983,11 +992,12 @@ let newline s =
 
 let space s =
   match read_char s with
-    | Some c when c = ' ' || c = '\t' ->
+    | Some ((' ' | '\t') as c) ->
         Consumed_ok (c, advance_state s 1, No_error)
-    | Some c when c = '\n' || c = '\r' ->
-        let k = if c = '\r' && next_char s = Some '\n' then 2 else 1 in
-        Consumed_ok ('\n', advance_state_nl s k, No_error)
+    | Some '\r' when next_char s = Some '\n' ->
+        Consumed_ok ('\n', advance_state_nl s 2, No_error)
+    | Some ('\n' | '\r') ->
+        Consumed_ok ('\n', advance_state_nl s 1, No_error)
     | _ ->
         Empty_failed (expected_error s "whitespace")
 
@@ -999,8 +1009,8 @@ let spaces s =
   let rec loop i =
     match read_index s i with
       | Some (' ' | '\t') ->
-          loop (i + 1)
-      | Some '\r' when read_index s (i + 1) = Some '\n' ->
+          loop (i+1)
+      | Some '\r' when read_index s (i+1) = Some '\n' ->
           let i' = i + 2 in
           lines := !lines + 1;
           line_begin := i';

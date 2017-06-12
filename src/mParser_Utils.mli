@@ -72,34 +72,3 @@ module Bytes: sig
       valid substrings of [b1] and [s2]. *)
 
 end
-
-
-module Char: sig
-  include module type of Char
-
-  val is_lowercase: t -> bool
-  (** Returns [true] if the given character is an English lowercase letter. *)
-
-  val is_uppercase: t -> bool
-  (** Returns [true] if the given character is an English uppercase letter. *)
-
-  val is_letter: t -> bool
-  (** Returns [true] if the given character is an English letter. *)
-
-  val is_digit: t -> bool
-  (** Returns [true] if the given character is a decimal digit. *)
-
-  val is_hex_digit: t -> bool
-  (** Returns [true] if the given character is a hexadecimal digit. *)
-
-  val is_oct_digit: t -> bool
-  (** Returns [true] if the given character is an octal digit. *)
-
-  val is_alphanum: t -> bool
-  (** Returns [true] if the given character is a letter or a digit. *)
-
-  val is_blank: t -> bool
-  (** Returns [true] if the given character is a space or a tab
-      ([' '] or ['\t']). *)
-
-end

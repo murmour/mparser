@@ -50,9 +50,9 @@
 
     The state of a parser consists of the input to be parsed, the current
     position in the input, the number of the current line, the position of the
-    first char of the current line in the input, and an optional user state.
-    A position [p] is valid if it satisfies [0 <= p && p < l], where [l] is
-    the length of the input; all other positions are invalid. Characters can
+    first character of the current line in the input, and an optional user
+    state. A position [p] is valid if it satisfies [0 <= p && p < l], where [l]
+    is the length of the input; all other positions are invalid. Characters can
     only be read from valid positions.
 
     The following functions that directly access or change the parser state
@@ -115,7 +115,7 @@ val read_string: 's state -> int -> string
     is not a valid position, the empty string is returned. *)
 
 val match_char: 's state -> char -> bool
-(** [match_char s c] returns [true] if [c] is the char at the current
+(** [match_char s c] returns [true] if [c] is the character at the current
     position, and [false] otherwise. *)
 
 val match_string: 's state -> string -> bool
@@ -564,7 +564,7 @@ val get_pos: (pos, 's) t
 
 val register_nl: int -> int -> (unit, 's) t
 (** [register_nl lines chars_after_nl] increases the line counter by [lines]
-    and sets the beginning of the current line to [chars_after_nl] chars
+    and sets the beginning of the current line to [chars_after_nl] characters
     before the current index. *)
 
 val set_pos: pos -> (unit, 's) t
@@ -704,11 +704,11 @@ val prev_char_satisfies: (char -> bool) -> (unit, 's) t
     with an [Unknown_error]. *)
 
 val any_of: string -> (char, 's) t
-(** [any_of str] parses any char occurring in the string [str] and returns
+(** [any_of str] parses any character occurring in the string [str] and returns
     it. *)
 
 val none_of: string -> (char, 's) t
-(** [none_of str] parses any char not occurring in the string [str] and
+(** [none_of str] parses any character not occurring in the string [str] and
     returns it. *)
 
 val uppercase: (char, 's) t
