@@ -1,3 +1,13 @@
+2017-06-12  Max Mouratov  <mmouratov@gmail.com>
+
+	Version 1.2.3
+
+	* New: [MParser.is_not].
+	* New: [MParser.non_space].
+	* Fix: A couple of implementation tweaks were added that should provide
+	a minor performance boost.
+
+
 2017-05-19  Max Mouratov  <mmouratov@gmail.com>
 
 	Version 1.2.2
