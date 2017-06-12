@@ -711,6 +711,10 @@ val none_of: string -> (char, 's) t
 (** [none_of str] parses any character not occurring in the string [str] and
     returns it. *)
 
+val is_not: (char, 's) t -> (char, 's) t
+(** [is_not c] parses any character that is not accepted by parser [c].
+    Fails with [Unknown_error] if the character is accepted by [c]. *)
+
 val uppercase: (char, 's) t
 (** Parses an English uppercase letter and returns it. *)
 

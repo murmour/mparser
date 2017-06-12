@@ -944,6 +944,15 @@ let any_of str =
 let none_of str =
   satisfy (fun x -> not (String.contains str x))
 
+let is_not p s =
+  if is_ok (p s) then
+    Empty_failed (unknown_error s)
+  else match read_char s with
+    | Some c ->
+        Consumed_ok (c, advance_state s 1, No_error)
+    | None ->
+        Empty_failed (unknown_error s)
+
 let uppercase s =
   satisfy_l (function 'A'..'Z' -> true | _ -> false)
     "uppercase letter" s
