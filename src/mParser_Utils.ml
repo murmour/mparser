@@ -22,18 +22,17 @@ module IO = struct
 
   let input chn buffer pos length =
     if pos < 0 || pos + length > Bytes.length buffer then
-      invalid_arg "MParser_Utils.IO.input: invalid substring"
-    else
-      let rec iter chars_read =
-        let pos' = pos + chars_read in
-        let length' = length - chars_read in
-        let chars = Pervasives.input chn buffer pos' length' in
-        if chars > 0 then
-          iter (chars_read + chars)
-        else
-          chars_read
-      in
-      iter 0
+      invalid_arg "MParser_Utils.IO.input: invalid substring";
+    let rec iter chars_read =
+      let pos' = pos + chars_read in
+      let length' = length - chars_read in
+      let chars = Pervasives.input chn buffer pos' length' in
+      if chars > 0 then
+        iter (chars_read + chars)
+      else
+        chars_read
+    in
+    iter 0
 
 end
 
@@ -42,15 +41,15 @@ module String = struct
   include String
 
   let unique =
-    let module SSet = Set.Make (String) in
-    fun l -> SSet.elements (List.fold_right SSet.add l SSet.empty)
+    let module S = Set.Make (String) in
+    fun l -> S.elements (List.fold_right S.add l S.empty)
 
   let for_all p a =
     let rec iter i =
       if i >= String.length a then
         true
       else if p (String.unsafe_get a i) then
-        iter (i + 1)
+        iter (i+1)
       else
         false
     in
@@ -66,8 +65,8 @@ module Bytes = struct
     let len_b = Bytes.length b in
     let len_pat = String.length pat in
     if not (start >= 0 && start <= len_b) then
-      invalid_arg "MParser_Utils.Bytes.match_sub: invalid index"
-    else if start + len_pat > len_b then
+      invalid_arg "MParser_Utils.Bytes.match_sub: invalid index";
+    if start + len_pat > len_b then
       false
     else
       let rec iter i =
@@ -77,24 +76,23 @@ module Bytes = struct
                 Bytes.unsafe_get b (start + i) then
           false
         else
-          iter (i + 1)
+          iter (i+1)
       in
       iter 0
 
   let match_sub2 b1 i1 s2 i2 n =
     if not (i1 >= 0 && i1 + n <= Bytes.length b1 &&
             i2 >= 0 && i2 + n <= String.length s2) then
-      invalid_arg "MParser_Utils.Bytes.match_sub2: invalid index"
-    else
-      let rec iter i =
-        if i >= n then
-          true
-        else if Bytes.unsafe_get b1 (i1 + i) <>
-                String.unsafe_get s2 (i2 + i) then
-          false
-        else
-          iter (i + 1)
-      in
-      iter 0
+      invalid_arg "MParser_Utils.Bytes.match_sub2: invalid index";
+    let rec iter i =
+      if i >= n then
+        true
+      else if Bytes.unsafe_get b1 (i1 + i) <>
+              String.unsafe_get s2 (i2 + i) then
+        false
+      else
+        iter (i+1)
+    in
+    iter 0
 
 end

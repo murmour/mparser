@@ -21,16 +21,15 @@
 open MParser_Utils
 
 
-type t =
-  {
-    block_size: int;         (** Size of a block in chars. *)
-    block_overlap: int;      (** Overlap between blocks in chars. *)
-    min_rspace: int;         (** Minimum space for regexp matching. *)
-    length: int;             (** Length of the stream in chars. *)
-    input: in_channel;       (** Input if created from a channel. *)
-    buffer: Bytes.t;         (** The block buffer. *)
-    mutable buffer_pos: int; (** Stream position of the current block. *)
-  }
+type t = {
+  block_size: int;         (** Size of a block in chars. *)
+  block_overlap: int;      (** Overlap between blocks in chars. *)
+  min_rspace: int;         (** Minimum space for regexp matching. *)
+  length: int;             (** Length of the stream in chars. *)
+  input: in_channel;       (** Input if created from a channel. *)
+  buffer: Bytes.t;         (** The block buffer. *)
+  mutable buffer_pos: int; (** Stream position of the current block. *)
+}
 
 
 (** [read_block s pos length] reads a block of [length] characters from
@@ -152,9 +151,8 @@ let unsafe_seek s pos =
 
 let seek s pos =
   if not (is_valid_pos s pos) then
-    invalid_arg "MParser_Char_Stream.seek: invalid stream position"
-  else
-    unsafe_seek s pos
+    invalid_arg "MParser_Char_Stream.seek: invalid stream position";
+  unsafe_seek s pos
 
 let chars_left s pos =
   if is_valid_pos s pos then

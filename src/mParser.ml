@@ -40,24 +40,22 @@ open MParser_Utils
 (* Parser state
    -------------------------------------------------------------------------- *)
 
-type 's state =
-  {
-    input: MParser_Char_Stream.t;
-    index: int;
-    line: int;
-    line_begin: int;
-    user: 's;
-  }
+type 's state = {
+  input: MParser_Char_Stream.t;
+  index: int;
+  line: int;
+  line_begin: int;
+  user: 's;
+}
 
 
-let init input user =
-  {
-    input;
-    index = 0;
-    line = 1;
-    line_begin = 0;
-    user;
-  }
+let init input user = {
+  input;
+  index = 0;
+  line = 1;
+  line_begin = 0;
+  user;
+}
 
 let is_valid_index s =
   s.index >= 0 && s.index < MParser_Char_Stream.length s.input
@@ -738,13 +736,12 @@ let set_pos (_, line, column) s =
 
 let skip_nchars n s =
   if n < 0 then
-    invalid_arg "MParser.skip: negative offset"
+    invalid_arg "MParser.skip: negative offset";
+  let s' = advance_state s n in
+  if s'.index <> s.index then
+    Consumed_ok ((), s', No_error)
   else
-    let s' = advance_state s n in
-    if s'.index <> s.index then
-      Consumed_ok ((), s', No_error)
-    else
-      Empty_ok ((), s, No_error)
+    Empty_ok ((), s, No_error)
 
 let eof s =
   match read_char s with
@@ -873,7 +870,7 @@ let satisfy_l p label s =
 let skip_satisfy p =
   satisfy p |>> ignore
 
-let skip_satisfy_l p label=
+let skip_satisfy_l p label =
   satisfy_l p label |>> ignore
 
 let nsatisfy n p s =
