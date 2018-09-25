@@ -193,7 +193,11 @@ let read_string s pos maxlen =
     Bytes.unsafe_to_string sub
 
 let match_char s pos c =
-  read_char s pos = Some c
+  if not (is_valid_pos s pos) then
+    false
+  else
+    (unsafe_seek s pos;
+     c = Bytes.unsafe_get s.buffer (pos - s.buffer_pos))
 
 let match_string s pos str =
   if not (is_valid_pos s pos) then
