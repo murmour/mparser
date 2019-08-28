@@ -18,9 +18,6 @@
 *)
 
 
-let ( |> ) f x = x f
-
-
 module IO = struct
 
   let input chn buffer pos length =
