@@ -1,0 +1,38 @@
+(lang dune 1.11)
+
+(license "LGPL-2.1 with OCaml linking exception")
+(name mparser)
+
+(authors "Holger Arnold" "Max Mouratov")
+(maintainers "Max Mouratov")
+(source (github murmour/mparser))
+
+(package
+ (name mparser)
+ (synopsis "A simple monadic parser combinator library")
+ (description "
+This library implements a rather complete and efficient monadic parser
+combinator library similar to the Parsec library for Haskell by Daan Leijen and
+the FParsec library for FSharp by Stephan Tolksdorf.")
+ (depends
+  (dune (>= 1.11))))
+
+(package
+ (name mparser-pcre)
+ (synopsis "Support for PCRE-based regular expression parsers")
+ (description "Support for PCRE-based regular expression parsers")
+ (depends
+  mparser
+  pcre
+  (dune (>= 1.11))))
+
+(package
+ (name mparser-re)
+ (synopsis "Support for RE-based regular expression parsers")
+ (description "Support for RE-based regular expression parsers")
+ (depends
+  mparser
+  re
+  (dune (>= 1.11))))
+
+(generate_opam_files true)
