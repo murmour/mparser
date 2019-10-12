@@ -1,0 +1,20 @@
+(library
+ (name mparser)
+ (public_name mparser)
+ (modules_without_implementation MParser_Sig)
+ (modules MParser MParser_Sig MParser_Char_Stream MParser_Utils)
+ (wrapped false))
+
+(library
+ (name mparser_pcre)
+ (public_name mparser-pcre)
+ (libraries mparser pcre)
+ (modules MParser_PCRE)
+ (wrapped false))
+
+(library
+ (name mparser_re)
+ (libraries mparser re.perl)
+ (public_name mparser-re)
+ (modules MParser_RE)
+ (wrapped false))
