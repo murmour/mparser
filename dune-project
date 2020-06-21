@@ -19,8 +19,7 @@ the FParsec library for FSharp by Stephan Tolksdorf.")
 
 (package
  (name mparser-pcre)
- (synopsis "Support for PCRE-based regular expression parsers")
- (description "Support for PCRE-based regular expression parsers")
+ (synopsis "MParser plugin: PCRE-based regular expressions")
  (depends
   mparser
   pcre
@@ -28,8 +27,7 @@ the FParsec library for FSharp by Stephan Tolksdorf.")
 
 (package
  (name mparser-re)
- (synopsis "Support for RE-based regular expression parsers")
- (description "Support for RE-based regular expression parsers")
+ (synopsis "MParser plugin: RE-based regular expressions")
  (depends
   mparser
   re
