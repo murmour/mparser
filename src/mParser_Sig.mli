@@ -45,7 +45,7 @@ module type Regexp = sig
       string is returned in the corresponding position instead. *)
 
   val exec: rex: t -> pos: int -> Bytes.t -> substrings option
-  (** Attemts to match the byte-buffer with a regular expression, starting
+  (** Attempts to match the byte-buffer with a regular expression, starting
       from the position [pos]. Returns the matched substrings or [None]
       on failure. *)
 

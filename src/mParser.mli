@@ -774,7 +774,7 @@ type assoc =
     c)], and non-associative if applying [(#)] to an expression with head
     operator [(#)] is not allowed. Note that a value of this type specifies
     only how an expression like [a # b # c] is parsed, not how it is
-    interpreted semanically. *)
+    interpreted semantically. *)
 
 type ('a, 's) operator =
   | Infix of (('a -> 'a -> 'a, 's) t * assoc)   (** Infix operator. *)
