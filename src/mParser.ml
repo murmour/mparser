@@ -200,9 +200,9 @@ let rec concat_conj conj = function
       sprintf "%s, %s" x (concat_conj conj xs)
 
 let rec error_message input pos messages width indent =
-  let (index, line, column) = pos in
+  let (_, line, column) = pos in
 
-  let (unexp, exp, msg, comp, back, unknowns) =
+  let (unexp, exp, msg, comp, back, _unknowns) =
     List.fold_left
       (fun ((u, e, m, c, b, k) as msgs) msg ->
          match msg with
@@ -499,7 +499,7 @@ let (<??>) p label s =
   if is_empty reply then
     if is_error reply then
       match get_error reply with
-        | Parse_error (pos, [ Backtrack_error error ]) ->
+        | Parse_error (_, [ Backtrack_error error ]) ->
             set_error reply (compound_error s label error)
         | _ ->
             set_error reply (expected_error s label)
@@ -514,7 +514,7 @@ let look_ahead p s =
   match p s with
     | Empty_ok (r, _, _) | Consumed_ok (r, _, _) ->
         Empty_ok (r, s, No_error)
-    | (Empty_failed e) as err ->
+    | (Empty_failed _) as err ->
         err
     | Consumed_failed e ->
         Empty_failed (backtrack_error s e)
@@ -523,14 +523,14 @@ let followed_by p msg s =
   match p s with
     | Empty_ok _ | Consumed_ok _ ->
         Empty_ok ((), s, No_error)
-    | Empty_failed e | Consumed_failed e ->
+    | Empty_failed _ | Consumed_failed _ ->
         Empty_failed (expected_error s msg)
 
 let not_followed_by p msg s =
   match p s with
     | Empty_ok _ | Consumed_ok _ ->
         Empty_failed (unexpected_error s msg)
-    | Empty_failed e | Consumed_failed e ->
+    | Empty_failed _ | Consumed_failed _ ->
         Empty_ok ((), s, No_error)
 
 let opt x p =
@@ -555,7 +555,7 @@ let many_fold_apply f a g p =
     match p s with
       | Consumed_ok (r, s1, e1) ->
           loop true (f a r) s1 e1
-      | (Consumed_failed e1) as err ->
+      | (Consumed_failed _) as err ->
           err
       | Empty_failed e1 ->
           make_ok consumed (g a) s (merge_errors e1 e)
@@ -723,7 +723,7 @@ let register_nl lines chars_after_nl s =
   in
   Empty_ok ((), s1, No_error)
 
-let set_pos (index, line, column) s =
+let set_pos (_, line, column) s =
   let s' =
     { s with
         line;
@@ -748,7 +748,7 @@ let skip_nchars n s =
 
 let eof s =
   match read_char s with
-    | Some c ->
+    | Some _ ->
         Empty_failed (expected_error s "end of input")
     | None ->
         Empty_ok ((), s, No_error)
@@ -774,7 +774,7 @@ let any_char s =
 
 let skip_any_char s =
   match read_char s with
-    | Some c ->
+    | Some _ ->
         Consumed_ok ((), advance_state s 1, No_error)
     | None ->
         Empty_failed (expected_error s "any character")
