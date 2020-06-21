@@ -30,7 +30,7 @@ the FParsec library for FSharp by Stephan Tolksdorf.")
  (synopsis "MParser plugin: RE-based regular expressions")
  (depends
   mparser
-  re
+  (re (>= 1.5))
   (dune (>= 1.11))))
 
 (generate_opam_files true)

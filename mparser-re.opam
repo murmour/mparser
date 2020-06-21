@@ -8,7 +8,7 @@ homepage: "https://github.com/murmour/mparser"
 bug-reports: "https://github.com/murmour/mparser/issues"
 depends: [
   "mparser"
-  "re"
+  "re" {>= "1.5"}
   "dune" {>= "1.11"}
 ]
 build: [

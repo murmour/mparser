@@ -21,7 +21,7 @@
 module Regexp: MParser_Sig.Regexp = struct
 
   type t = Re.re
-  type substrings = Re.substrings
+  type substrings = Re.Group.t
 
 
   let compile_flags =
@@ -32,12 +32,12 @@ module Regexp: MParser_Sig.Regexp = struct
 
   let get_substring s idx =
     try
-      Some (Re.get s idx)
+      Some (Re.Group.get s idx)
     with Not_found ->
       None
 
   let get_all_substrings s =
-    Re.get_all s
+    Re.Group.all s
 
   let exec ~rex ~pos b =
     try
