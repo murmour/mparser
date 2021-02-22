@@ -26,7 +26,7 @@ module IO = struct
     let rec iter chars_read =
       let pos' = pos + chars_read in
       let length' = length - chars_read in
-      let chars = Pervasives.input chn buffer pos' length' in
+      let chars = Stdlib.input chn buffer pos' length' in
       if chars > 0 then
         iter (chars_read + chars)
       else
