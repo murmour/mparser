@@ -2,6 +2,7 @@
 
 (license "LGPL-2.1 with OCaml linking exception")
 (name mparser)
+(version 1.3)
 
 (authors "Holger Arnold" "Max Mouratov")
 (maintainers "Max Mouratov")
