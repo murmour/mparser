@@ -6,9 +6,9 @@ This library implements a rather complete and efficient monadic parser
 combinator library similar to the Parsec library for Haskell by Daan Leijen
 and the FParsec library for FSharp by Stephan Tolksdorf.
 
-See the file LICENSE.txt for copying conditions.
+See LICENSE.txt for copying conditions (LGPL with static linking exception).
 
-Home page: https://github.com/cakeplus/mparser
+Home page: https://github.com/murmour/mparser.
 
 MParser used to be a part of ocaml-base, a collection of useful OCaml
 libraries by Holger Arnold [1]_.
@@ -19,35 +19,31 @@ The monadic interface of MParser is compatible with pa_monad [2]_.
 Dependencies
 ------------
 
-In order to compile this package, you will need:
+To build this package, you need:
 
-* ocaml (>= 3.11).
-* findlib [3]_.
-* optional dependency: pcre-ocaml [4]_ for ``mparser.pcre``.
-* optional dependency: re [5]_ for ``mparser.re``.
+* OCaml (>= 4.02).
+* Dune (>= 1.11) [3]_.
+* Findlib [4]_.
+* Optionally: ``re`` [5]_ for ``mparser-re``.
+* Optionally: ``pcre-ocaml`` [6]_ for ``mparser-pcre``.
 
 
 Installing
 ----------
 
-1. Uncompress the source archive and go to the root of the package.
-2. Run ``ocaml setup.ml -configure``. Optional flags:
+Either use OPAM [7]_ or build manually with Dune [3]_.
 
-   - ``--enable-pcre`` -- support for PCRE-based regular expressions
-     (``MParser_PCRE`` module, ``mparser.pcre`` findlib package).
-   - ``--enable-re`` -- support for RE-based regular expressions
-     (``MParser_RE`` module, ``mparser.re`` findlib package).
+Installing from OPAM: `opam install [sub-library name]`.
 
-3. Run ``ocaml setup.ml -build``.
-4. Run ``ocaml setup.ml -install``.
-5. Optionally, run ``ocaml setup.ml -doc`` to produce an HTML API reference.
+To build manually, `cd` to this folder and run `dune build -p [sub-library name]`. Add `@install` for installation. Add `@doc` to produce API reference in `_build/default/_doc/_html`. Consult Dune manual for more options.
 
+Available sub-libraries:
 
-Uninstalling
-------------
-
-1. Go to the root of the package
-2. Run ``ocaml setup.ml -uninstall``
+- ``mparser``: base library;
+- ``mparser-re``: a plugin that adds support for regular expressions based on
+  ``re`` [5]_ (``MParser_RE`` module, ``mparser-re`` findlib package);
+- ``mparser-pcre``: a plugin that adds support for regular expressions based on
+  ``pcre-ocaml`` [6]_ (``MParser_PCRE`` module, ``mparser-pcre`` findlib package).
 
 
 Usage example
@@ -129,7 +125,9 @@ References
 ----------
 
 .. [1] http://www.holgerarnold.net/software
-.. [2] http://www.cas.mcmaster.ca/~carette/pa_monad
-.. [3] http://projects.camlcity.org/projects/findlib.html
-.. [4] https://bitbucket.org/mmottl/pcre-ocaml
+.. [2] https://www.cas.mcmaster.ca/~carette/pa_monad
+.. [3] https://github.com/ocaml/dune
+.. [4] http://projects.camlcity.org/projects/findlib.html
 .. [5] https://github.com/ocaml/ocaml-re
+.. [6] https://mmottl.github.io/pcre-ocaml
+.. [7] https://opam.ocaml.org
