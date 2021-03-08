@@ -48,3 +48,6 @@ module Regexp: MParser_Sig.Regexp = struct
 end
 
 include MParser.MakeRegexp (Regexp)
+
+
+external wrap: Re.re -> Regexp.t = "%identity"

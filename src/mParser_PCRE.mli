@@ -23,3 +23,13 @@
 module Regexp: MParser_Sig.Regexp
 
 include module type of MParser.MakeRegexp (Regexp)
+
+
+val wrap: Pcre.regexp -> Regexp.t
+(** Wrap a compiled regular expression into an abstract regexp.
+
+    Use this to circumvent limitations of [Regexp.make], which is defined as:
+
+      let make (rx: string) : Regexp.t =
+        Pcre.regexp ~iflags:(Pcre.cflags [ `ANCHORED ]) rx
+*)
