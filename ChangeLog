@@ -3,6 +3,9 @@
 	Version 1.3
 
 	* New: Build system is changed from OASIS to Dune.
+	* Break: Support for RE and PCRE was moved to separate OPAM packages:
+	mparser-re, mparser-pcre. Findlib packages were renamed accordingly:
+	mparser.re -> mparser-re, mparser.pcre -> mparser-pcre.
 	* New: [MParser_RE.wrap], [MParser_PCRE.wrap].
 	* Fix: Cleaned up deprecation warnings.
 	* Drop: Support for OCaml < 4.02.
@@ -15,8 +18,7 @@
 
 	* New: [MParser.is_not].
 	* New: [MParser.non_space].
-	* Fix: A couple of implementation tweaks were added that should provide
-	a minor performance boost.
+	* New: Some tweaks that should provide a minor performance boost.
 
 
 2017-05-19  Max Mouratov  <mmouratov@gmail.com>
@@ -33,8 +35,7 @@
 	* New: OASIS is set up to produce API reference (in HTML).
 	* Fix: The library file names were made distinct from the corresponding
 	module names, as name conflicts made OASIS confused on Windows.
-	* Fix: A couple of implementation tweaks were added that should provide
-	a minor performance boost.
+	* New: Some tweaks that should provide a minor performance boost.
 
 
 2016-01-20  Max Mouratov  <mmouratov@gmail.com>
@@ -44,13 +45,13 @@
 	* New: [MParser.(>>)] and [MParser.(<<)] now have aliases
 	[MParser.(>>>)] and [MParser.(<<<)], the names of which do not cause
 	conflicts with the Camlp4 parser ("<<" is the start of a quotation).
-	* New: [MParser.skip p] is now an alias for [p |>> ignore]. The old
+	* Break: [MParser.skip p] is now an alias for [p |>> ignore]. The old
 	[MParser.skip] is now available as [MParser.skip_nchars], which is a
 	more suitable name for its semantics.
 	* New (MParser_PCRE): [`Anchored] is now a compilation flag instead
 	of a runtime one, which helps a little bit with performance.
-	* Fix: [CharStream] was renamed to [MParser_Char_Stream] in order to
-	avoid link-time module name conflicts with other libraries.
+	* Break: [CharStream] was renamed to [MParser_Char_Stream] in order
+	to avoid link-time module name conflicts with other libraries.
 	* Fix (MParser_Char_Stream): Mutable strings were replaced with
 	[Bytes.t] in the implementation, as it should be in modern OCaml.
 
