@@ -15,8 +15,7 @@ This library implements a rather complete and efficient monadic parser
 combinator library similar to the Parsec library for Haskell by Daan Leijen and
 the FParsec library for FSharp by Stephan Tolksdorf.")
  (depends
-  (ocaml (>= 4.02))
-  (dune (>= 1.11))))
+  (ocaml (>= 4.02))))
 
 (package
  (name mparser-pcre)
@@ -24,8 +23,7 @@ the FParsec library for FSharp by Stephan Tolksdorf.")
  (depends
   (ocaml (>= 4.02))
   mparser
-  pcre
-  (dune (>= 1.11))))
+  pcre))
 
 (package
  (name mparser-re)
@@ -33,7 +31,6 @@ the FParsec library for FSharp by Stephan Tolksdorf.")
  (depends
   (ocaml (>= 4.02))
   mparser
-  (re (>= 1.5))
-  (dune (>= 1.11))))
+  (re (>= 1.5))))
 
 (generate_opam_files true)
