@@ -4,8 +4,8 @@
 (name mparser)
 (version 1.3)
 
-(authors "Holger Arnold" "Max Mouratov")
-(maintainers "Max Mouratov")
+(authors "Holger Arnold <holger@harnold.org>" "Max Mouratov <mmouratov@gmail.com>")
+(maintainers "Max Mouratov <mmouratov@gmail.com>")
 (source (github murmour/mparser))
 
 (package
