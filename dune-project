@@ -32,6 +32,6 @@ the FParsec library for FSharp by Stephan Tolksdorf.")
  (depends
   (ocaml (>= 4.02))
   mparser
-  (re (>= 1.5))))
+  (re (>= 1.7.2))))
 
 (generate_opam_files true)

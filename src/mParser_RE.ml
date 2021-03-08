@@ -28,7 +28,7 @@ module Regexp: MParser_Sig.Regexp = struct
     [ `Anchored ]
 
   let make pattern =
-    Re_perl.(compile (re ~opts:compile_flags pattern))
+    Re.Perl.(compile (re ~opts:compile_flags pattern))
 
   let get_substring s idx =
     try
