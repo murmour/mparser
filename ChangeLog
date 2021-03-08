@@ -1,3 +1,14 @@
+2021-03-09  Max Mouratov  <mmouratov@gmail.com>
+
+	Version 1.3
+
+	* New: Build system is changed from OASIS to Dune.
+	* New: [MParser_RE.wrap], [MParser_PCRE.wrap].
+	* Fix: Cleaned up deprecation warnings.
+	* Drop: Support for OCaml < 4.02.
+	* Drop: Support for ocaml-re < 1.7.2.
+
+
 2017-06-12  Max Mouratov  <mmouratov@gmail.com>
 
 	Version 1.2.3
