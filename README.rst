@@ -33,9 +33,9 @@ Installing
 
 Either use OPAM [7]_ or build manually with Dune [3]_.
 
-Installing from OPAM: `opam install [sub-library name]`.
+Installing from OPAM: ``opam install [sub-library name]``.
 
-To build manually, `cd` to this folder and run `dune build -p [sub-library name]`. Add `@install` for installation. Add `@doc` to produce API reference in `_build/default/_doc/_html`. Consult Dune manual for more options.
+To build manually, ``cd`` to this folder and run ``dune build -p [sub-library name]``. Add ``@install`` for installation. Add ``@doc`` to produce API reference in ``_build/default/_doc/_html``. Consult Dune manual for more options.
 
 Available sub-libraries:
 
