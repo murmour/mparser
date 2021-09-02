@@ -1,4 +1,3 @@
-
 (* MParser, a simple monadic parser combinator library
    -----------------------------------------------------------------------------
    Copyright (C) 2008, Holger Arnold
@@ -407,8 +406,12 @@ let (>>=) = bind
 let (>>) p q =
   p >>= fun _ -> q
 
+let ( *> ) = (>>)
+
 let (<<) p q =
   p >>= fun x -> q >> return x
+
+let ( <* ) = ( << )
 
 let (>>>) = (>>)
 
