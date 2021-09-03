@@ -395,6 +395,10 @@ val (<?>): ('a, 's) t -> string -> ('a, 's) t
     consuming input, the error message of [p] is replaced by an
     [Expected_error] with the label [label]. *)
 
+val hidden : ('a, 's) t -> ('a, 's) t
+(** [hidden p] behaves just like parser [p] but it doesn't show any
+    expected tokens in error message of [p]*)
+
 val (<??>): ('a, 's) t -> string -> ('a, 's) t
 (** [p <??> label] behaves like [p <?> label], but if [p] fails after
     consuming input, the error message of [p] is wrapped inside a

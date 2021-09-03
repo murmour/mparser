@@ -495,6 +495,9 @@ let (<?>) p label s =
   else
     reply
 
+let hidden p s =
+  ( <?> ) p "" s
+
 let (<??>) p label s =
   let reply = p s in
   if is_empty reply then
