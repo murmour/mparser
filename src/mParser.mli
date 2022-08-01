@@ -253,7 +253,7 @@ val is_error: ('a, 's) reply -> bool
     [Consumed_failed], and [false] otherwise. *)
 
 val is_ok: ('a, 's) reply -> bool
-(** [is_error reply] returns [true] if [reply] is [Empty_ok] or [Consumed_ok],
+(** [is_ok reply] returns [true] if [reply] is [Empty_ok] or [Consumed_ok],
     and [false] otherwise. *)
 
 val set_error: ('a, 's) reply -> error -> ('a, 's) reply
