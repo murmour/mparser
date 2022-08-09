@@ -1,4 +1,3 @@
-
 (* MParser, a simple monadic parser combinator library
    -----------------------------------------------------------------------------
    Copyright (C) 2008, Holger Arnold
@@ -335,10 +334,20 @@ val (>>=): ('a, 's) t -> ('a -> ('b, 's) t) -> ('b, 's) t
 (** [p >>= f] is equivalent to [bind p f] *)
 
 val (>>): ('a, 's) t -> ('b, 's) t -> ('b, 's) t
-(** [p >> q] is equivalent to [p >>= (fun _ -> q)]. *)
+(** [p >> q] runs [p], discards its result and then runs [q], and returns its
+    result. *)
+
+val ( *> ): ('a, 's) t -> ('b, 's) t -> ('b, 's) t
+(** [p *> q] runs [p], discards its result and then runs [q], and returns its
+    result. *)
 
 val (<<): ('a, 's) t -> ('b, 's) t -> ('a, 's) t
-(** [p << q] is equivalent to [p >>= (fun x -> q >> return x)]. *)
+(** [p << q] runs [p], then runs [q], discards its result, and returns the
+    result of [p]. *)
+
+val ( <* ): ('a, 's) t -> ('b, 's) t -> ('a, 's) t
+(** [p <* q] runs [p], then runs [q], discards its result, and returns the
+    result of [p]. *)
 
 val (>>>): ('a, 's) t -> ('b, 's) t -> ('b, 's) t
 (** Camlp4-compatible alternative to [>>]. *)
@@ -385,6 +394,10 @@ val (<?>): ('a, 's) t -> string -> ('a, 's) t
 (** [p <?> label] attaches the label [label] to [p]. If [p] fails without
     consuming input, the error message of [p] is replaced by an
     [Expected_error] with the label [label]. *)
+
+val hidden : ('a, 's) t -> ('a, 's) t
+(** [hidden p] behaves just like parser [p] but it doesn't show any
+    expected tokens in error message of [p]*)
 
 val (<??>): ('a, 's) t -> string -> ('a, 's) t
 (** [p <??> label] behaves like [p <?> label], but if [p] fails after
